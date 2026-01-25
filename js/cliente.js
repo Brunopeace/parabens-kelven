@@ -365,7 +365,7 @@ function verificarHorario() {
     const agora = new Date();
     const hora = agora.getHours();
     const bloqueioManual = localStorage.getItem('lojaBloqueada') === 'true';
-    const horarioPermitido = hora >= 17 && hora < 23;
+    const horarioPermitido = hora >= 17 && hora < 19;
     const estaAberto = horarioPermitido && !bloqueioManual;
 
     const banner = document.getElementById('status-loja');
