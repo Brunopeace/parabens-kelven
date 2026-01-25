@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle | Salgados Delícia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/adm.css">
+
+</head>
+<body>
+    <div class="admin-container">
+        <div class="header">
+            <div>
+                <h1>Gerenciador de Pedidos</h1>
+                <p style="color: #6B7280;">Acompanhe e atualize os pedidos em tempo real</p>
+            </div>
+            <span class="badge" id="painel-status">Conectado</span>
+        </div>
+
+        <div class="admin-controls">
+            <div class="status-info">
+                <h3 id="txt-status-loja">Status da Operação: <span style="color: #10b981;">Normal</span></h3>
+                <p id="desc-status-loja">A loja está seguindo o horário automático.</p>
+            </div>
+            <button id="btn-toggle-emergencia" class="btn-emergency open-now" onclick="toggleEmergencia()">
+                <i class="fas fa-power-off"></i>
+                <span id="btn-texto-emergencia">Pausar Vendas</span>
+            </button>
+        </div>
+
+        <div id="lista-pedidos-container">
+            <div style="text-align: center; grid-column: 1/-1; padding: 50px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #D97706;"></i>
+                <p>Carregando pedidos...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+function atualizarBotaoStatus() {
+    const isBloqueada = localStorage.getItem('lojaBloqueada') === 'true';
+    const btn = document.getElementById('btn-toggle-emergencia');
+    const textoBtn = document.getElementById('btn-texto-emergencia');
+    const tituloStatus = document.getElementById('txt-status-loja');
+    const descStatus = document.getElementById('desc-status-loja');
+
+    if (!btn || !tituloStatus || !descStatus) return;
+
+    if (isBloqueada) {
+        // --- MODO PAUSA MANUAL ATIVO ---
+        btn.className = "btn-emergency closed-now";
+        if (textoBtn) textoBtn.innerText = "Reabrir Loja agora";
+        
+        tituloStatus.innerHTML = `
+            Status: <span style="color: #dc2626; font-weight: 800;">
+                <span class="pulse-red"></span> LOJA FECHADA
+            </span>`;
+        
+        descStatus.innerHTML = "<strong>Você fechou a loja:</strong> 'Assim que você chegar do seu imprevisto, Clique no botão novamente para reabrir a sua loja!'";
+        
+        // Efeito visual no card de controle
+        btn.parentElement.style.borderLeft = "6px solid #dc2626";
+        btn.parentElement.style.background = "#fffafa";
+    } else {
+        // --- MODO FLUXO AUTOMÁTICO ---
+        btn.className = "btn-emergency open-now";
+        if (textoBtn) textoBtn.innerText = "Fechar Loja imprevisto";
+        
+        tituloStatus.innerHTML = `
+            Status: <span style="color: #10b981; font-weight: 800;">
+                <i class="fas fa-check-circle"></i> LOJA ABERTA
+            </span>`;
+        
+        descStatus.innerHTML = "<strong>Horario:</strong> <br> A loja irá fecha automaticamente 18:00 as 23:00";
+        
+        // Reset do efeito visual
+        btn.parentElement.style.borderLeft = "6px solid #10b981";
+        btn.parentElement.style.background = "#fff";
+    }
+}
+
+function toggleEmergencia() {
+    const atual = localStorage.getItem('lojaBloqueada') === 'true';
+    localStorage.setItem('lojaBloqueada', !atual);
+    
+    // Adiciona uma pequena vibração ao botão ao clicar (estilo nativo)
+    const btn = document.getElementById('btn-toggle-emergencia');
+    btn.style.transform = "scale(0.95)";
+    
+    setTimeout(() => {
+        btn.style.transform = "scale(1)";
+        atualizarBotaoStatus();
+    }, 100);
+}
+
+// Inicialização única
+document.addEventListener('DOMContentLoaded', atualizarBotaoStatus);
+</script>
+   
+    <script type="module" src="js/adm.js"></script>
+</body>
+</html>

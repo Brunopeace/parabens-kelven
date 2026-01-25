@@ -1,0 +1,281 @@
+/* CONFIGURAÇÕES GERAIS */
+:root {
+    --primary: #D97706;
+    --primary-light: #FEF3C7;
+    --success: #10b981;
+    --success-light: #D1FAE5;
+    --danger: #ef4444;
+    --danger-light: #FEE2E2;
+    --info: #3b82f6;
+    --info-light: #DBEAFE;
+    --bg: #f8fafc;
+    --text-main: #1e293b;
+    --text-soft: #64748b;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* CONTAINER PRINCIPAL */
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* CABEÇALHO */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--white);
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.badge {
+    background: var(--primary);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* GRID DE PEDIDOS */
+#lista-pedidos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+/* CARD DE PEDIDO INDIVIDUAL */
+.order-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    border-top: 8px solid var(--primary); /* Destaque no topo */
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06);
+}
+
+/* Quando o status for "Saiu para Entrega" */
+.order-card.finalizado {
+    border-top-color: var(--success);
+}
+
+/* Estilos rápidos para o Botão de Emergência no Painel */
+        .admin-controls {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f3f4f6;
+        }
+
+        .status-info h3 { font-size: 1.1rem; color: #111827; margin-bottom: 4px; }
+        .status-info p { font-size: 0.85rem; color: #6b7280; }
+
+        .btn-emergency {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* Estado: Loja Aberta (Botão para Fechar) */
+        .btn-emergency.open-now {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .btn-emergency.open-now:hover { background: #fecaca; }
+
+        /* Estado: Loja Fechada (Botão para Abrir) */
+        .btn-emergency.closed-now {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .btn-emergency.closed-now:hover { background: #bbf7d0; }
+
+        .pulse-red {
+            width: 10px;
+            height: 10px;
+            background: #dc2626;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+
+/* INFORMAÇÕES DO CLIENTE */
+.pedido-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--text-main);
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+
+.pedido-info p {
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+}
+
+.lista-itens-detalhe {
+    list-style: none;
+    margin: 15px 0;
+    padding: 12px;
+    background: #fdfcfb;
+    border-radius: 12px;
+    border: 1px dashed #e2e8f0;
+}
+
+.lista-itens-detalhe li {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.lista-itens-detalhe li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.total-pedido {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 10px;
+}
+
+/* GRUPOS DE BOTÕES */
+.status-group, .whatsapp-tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.whatsapp-tools {
+    grid-template-columns: 1fr; /* Ocupa a linha toda */
+    border-top: 1px solid #f1f5f9;
+    padding-top: 15px;
+}
+
+.btn-status {
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+/* ESTILOS ESPECÍFICOS DOS BOTÕES */
+
+.btn-prep {
+    background-color: var(--info-light);
+    color: var(--info);
+}
+
+.btn-prep:hover {
+    background: green;
+    color: #ffffff;
+}
+
+.btn-ready {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.btn-ready:hover {
+    background: blue;
+    color: #ffffff;
+}
+
+.btn-cancel {
+    background-color: var(--danger-light);
+    color: var(--danger);
+    grid-column: span 2; /* Botão de excluir ocupa as duas colunas */
+}
+
+.btn-cancel:hover {
+    background: #ff0000;
+    color: #ffffff;
+}
+
+.btn-wa {
+    background-color: #25D366;
+    color: white;
+}
+
+.btn-status:hover {
+    filter: brightness(0.95);
+    transform: scale(0.98);
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    #lista-pedidos-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+}

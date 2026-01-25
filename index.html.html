@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salgados Delícia | Sabor que Abraça</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/cliente.css">
+</head>
+<body>
+    
+<div id="status-loja" class="status-loja closed" style="display: none;">
+    <i class="fas fa-moon"></i>
+    <div class="status-text-container">
+        <span class="status-title">Loja fechada</span>
+        <span class="status-subtitle">Voltamos hoje às 18:00! 🥟</span>
+    </div>
+</div>
+
+    <nav class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Salgados Delícia" class="logo-img">
+            <span>Salgados Delícia</span>
+        </div>
+   
+        <div class="nav-links">
+            <a href="#inicio">Início</a>
+            <a href="#cardapio">Cardápio</a>
+        </div>
+        <button class="cart-trigger" onclick="toggleCart()">
+            <i class="fas fa-shopping-basket"></i>
+            <span id="cart-count">0</span>
+        </button>
+    </nav>
+
+    <section class="hero" id="inicio">
+        <h1>Sabor que abraça</h1>
+        <p>Salgados artesanais quentinhos, feitos com o carinho que você merece.</p>
+    </section>
+
+    <main class="container" id="cardapio">
+        <h2 class="section-title">Nosso Cardápio</h2>
+        <div class="menu-grid">
+                                 
+<div class="card">
+    <div class="img-container">
+        <img src="img/pastelgrande.png" alt="Pastel Grande" class="card-img" id="img-pastel">
+    </div>
+    <div class="card-info">
+        <h3>Monte seu Pastel Grande</h3>
+        <p class="description">Escolha o seu sabor favorito e personalize do seu jeito!</p>
+        
+        <div class="opcoes">
+            <p><strong>1. Escolha o Sabor:</strong></p>
+            <select id="sabor-pastel" class="input-checkout" style="margin-bottom: 15px; cursor: pointer;">
+                <option value="Pastel Frango Cream Cheese" data-preco="7.50">Frango com Cream Cheese - R$ 7,50</option>
+                <option value="Pastel Carne Especial" data-preco="7.50">Carne Especial - R$ 7,50</option>
+                <option value="Pastel Queijo Duplo" data-preco="7.00">Queijo Duplo - R$ 7,00</option>
+                <option value="Pastel Pizza" data-preco="7.50">Pizza (Presunto/Queijo/Tomate) - R$ 7,50</option>
+                <option value="Pastel Calabresa com Queijo" data-preco="7.50">Calabresa com Queijo - R$ 7,50</option>
+                <option value="Pastel Romeu e Julieta" data-preco="8.00">Romeu e Julieta - R$ 8,00</option>
+            </select>
+
+            <p><strong>2. Personalize:</strong></p>
+            <div class="grupo-opcao">
+                <label><input type="radio" name="tomate-unico" class="extra" value="Sem Tomate"> Sem Tomate</label>
+                <label><input type="radio" name="tomate-unico" class="extra" value="Com Tomate"> Com Tomate</label>
+            </div>
+
+            <div class="grupo-opcao">
+                <label><input type="radio" name="cebola-unico" class="extra" value="Sem Cebola"> Sem Cebola</label>
+                <label><input type="radio" name="cebola-unico" class="extra" value="Com Cebola"> Com Cebola</label>
+            </div>
+            
+            <button type="button" onclick="limparRadios(this)" class="limpar-opcoes">Limpar opções</button>
+        </div>
+
+        <div class="card-footer">
+            <span class="price" id="preco-dinamico">R$ 7,50</span>
+            <button class="btn-add" onclick="adicionarPastelDinamico(this)">
+                Adicionar
+            </button>
+        </div>
+    </div>
+</div>           
+            
+            <div class="card">
+                <div class="img-container">
+                    <img src="img/coca-gelada.png" alt="Coca cola" class="card-img">
+                </div>
+                <div class="card-info">
+                    <h3>Coca cola lata</h3>
+                    <p class="description">Coca lata super gelada.</p>
+                    <div class="card-footer">
+                        <span class="price">R$ 6,00</span>
+                        <button class="btn-add" onclick="adicionarAoCarrinho('Coca cola lata', 6.50, true, this)">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+                        
+            <div class="card">
+                <div class="img-container">
+                    <img src="img/guarana-antartica.png" alt="Guarana antartica" class="card-img">
+                </div>
+                <div class="card-info">
+                    <h3>Guarana antartica lata</h3>
+                    <p class="description">Guaraná antártica lata super gelada.</p>
+                    <div class="card-footer">
+                        <span class="price">R$ 6,00</span>
+                        <button class="btn-add" onclick="adicionarAoCarrinho('Guarana antartica lata', 6.00, true, this)">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="img-container">
+                    <img src="img/coxao-de-frango.png" alt="Coxão de frango" class="card-img">
+                </div>
+                <div class="card-info">
+                    <h3>Coxão de frango + Coca</h3>
+                    <p class="description">Massa de batata e recheio super temperado.</p>
+                    <div class="card-footer">
+                        <span class="price">R$ 12,50</span>
+                        <button class="btn-add" onclick="adicionarAoCarrinho('Coxinha + Coca', 12.50, false, this)">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="img-container">
+                    <img src="img/hamburguer.png" alt="hamburguer" class="card-img">
+                </div>
+                <div class="card-info">
+                    <h3>Hambúrguer</h3>
+                    <p class="description">Pão brioche, 180g de carne, queijo cheddar, alface, tomate e molho especial.</p>
+                    <div class="card-footer">
+                        <span class="price">R$ 6,00</span>
+                        <button class="btn-add" onclick="adicionarAoCarrinho('hamburguer', 28.00, true, this)">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+    </main>
+
+    <div id="modal-cart" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seu Pedido</h2>
+                <button onclick="toggleCart()" class="close-modal">&times;</button>
+            </div>
+            
+            <div id="itens-lista" class="itens-lista">
+                </div>
+
+            <div class="checkout-area">
+                <div class="total-container">
+                    <span>Total:</span>
+                    <span id="total-val">R$ 0,00</span>
+                </div>
+
+                <div class="identificacao-cliente">
+                    <input type="text" id="cliente-nome" placeholder="Seu Nome Completo" class="input-checkout">
+                    <input type="tel" id="cliente-tel" placeholder="Seu Telefone (DDD)" class="input-checkout">
+                </div>
+                
+                <div class="pix-box">
+                    <p><i class="fas fa-bolt"></i> Pagamento via <strong>PIX</strong></p>
+                    <div class="pix-copy">
+                        <code id="chave-pix">brunopeaceandlove60@gmail.com</code>
+                        <button onclick="copiarPix()"><i class="far fa-copy"></i></button>
+                    </div>
+                </div>
+                
+                <button class="btn-whats" onclick="enviarPedidoZap()">
+                    <i class="fab fa-whatsapp"></i> Finalizar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-status" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Acompanhar Pedido</h2>
+                <button onclick="toggleStatus()" class="close-modal">&times;</button>
+            </div>
+            
+            <div id="sem-pedido">
+                <p style="text-align:center; color:#999; padding: 20px;">Você não tem nenhum pedido ativo no momento.</p>
+            </div>
+
+            <div id="com-pedido" style="display:none;">
+                <div class="status-step active">
+                    <div class="step-icon"><i class="fas fa-check"></i></div>
+                    <div class="step-text">
+                        <strong>Pedido Recebido</strong>
+                        <p>Já recebemos seu pedido no sistema.</p>
+                    </div>
+                </div>
+                
+                <div class="status-step" id="step-preparo">
+                    <div class="step-icon"><i class="fas fa-fire"></i></div>
+                    <div class="step-text">
+                        <strong>Em Preparação</strong>
+                        <p>Seus salgados estão no fogo!</p>
+                    </div>
+                </div>
+                
+                <div class="status-step" id="step-entrega">
+                    <div class="step-icon"><i class="fas fa-motorcycle"></i></div>
+                    <div class="step-text">
+                        <strong>Saiu para Entrega</strong>
+                        <p>O entregador está a caminho.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="btn-track" class="btn-track" onclick="toggleStatus()" style="display:none;">
+        <i class="fas fa-clock"></i> Acompanhar Pedido
+    </button>
+
+    <div id="toast-container"></div>
+    
+    <div id="modal-sugestao" class="modal">
+    <div class="modal-content" style="max-width: 350px; text-align: center;">
+        <h2 style="color: #D97706;">Vai uma bebida aí? 🥤</h2>
+        <p style="margin: 15px 0; font-size: 0.9rem;">Seu pedido fica ainda melhor com uma Coca-Cola super gelada!</p>
+        
+        <img src="img/coca-gelada.png" style="width: 100%; border-radius: 15px; margin-bottom: 15px;">
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button onclick="adicionarBebidaESeguir()" class="btn-add" style="width: 100%; background: #10b981;">
+                Sim, adicionar Coca-Cola (+R$ 6,00)
+            </button>
+            <button onclick="ignorarSugestao()" class="nao-obrigado">
+                Não, obrigado. Quero apenas os salgados.
+            </button>
+        </div>
+    </div>
+</div>
+
+    
+    <script type="module" src="js/cliente.js"></script>
+</body>
+</html>
