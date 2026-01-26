@@ -98,7 +98,7 @@ function verificarHorario() {
     
     // 2. Regra de Horário (17:00 às 23:00)
     // 1700 é 17:00 | 2300 é 23:00
-    const horarioPermitido = horarioAtualNumerico >= 1700 && horarioAtualNumerico < 2300; 
+    const horarioPermitido = horarioAtualNumerico >= 700 && horarioAtualNumerico < 2400; 
     
     // 3. Estado de Abertura (Status do Firebase + Relógio)
     const estaAberto = horarioPermitido && !bloqueioManualOnline;
