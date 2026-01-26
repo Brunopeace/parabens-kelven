@@ -1,8 +1,9 @@
 {
+  "id": "/SALGADOS/",
   "name": "Salgados Delícia",
   "short_name": "Salgados",
-  "start_url": "/SALGADOS/index.html",
-  "scope": "/SALGADOS/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#D97706",
