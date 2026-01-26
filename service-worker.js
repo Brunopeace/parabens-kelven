@@ -10,8 +10,8 @@ self.addEventListener('install', (event) => {
       '/index.html',
       '/css/cliente.css',
       '/css/adm.css',
-      '/img/icon192.png',
-      '/img/icon512.png',
+      '/img/icone-512.png',
+      '/img/icone-192.png',
       '/js/cliente.js',
       '/js/adm.js'
   ];
