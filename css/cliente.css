@@ -27,6 +27,63 @@ body {
     line-height: 1.6;
 }
 
+/* BOTÃO DE INSTALAÇÃO PWA */
+.btn-install-pwa {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 20px rgba(217, 119, 6, 0.3);
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUp 0.5s ease-out;
+}
+
+.btn-install-pwa:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px rgba(217, 119, 6, 0.4);
+}
+
+.btn-install-pwa:active {
+    transform: scale(0.95);
+}
+
+.btn-install-pwa i {
+    font-size: 18px;
+}
+
+/* Animação de entrada */
+@keyframes slideUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Esconder o botão se a tela for muito pequena e puder atrapalhar outros elementos (opcional) */
+@media (max-width: 480px) {
+    .btn-install-pwa {
+        bottom: 80px; /* Sobe um pouco para não ficar em cima de abas do navegador */
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
 /* CONTAINER PRINCIPAL DO BANNER */
 #status-loja {
     position: fixed;
