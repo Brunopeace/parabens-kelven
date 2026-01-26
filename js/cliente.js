@@ -22,17 +22,54 @@ const SEU_TELEFONE = "5581982258462";
 
 // 3. LÓGICA DE HORÁRIO E STATUS ONLINE
 let bloqueioManualOnline = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function verificarHorario() {
-    const brasilia = new Intl.DateTimeFormat("pt-BR", {
+    // 1. Obtém a data e hora atual de Brasília com precisão
+    const agora = new Date();
+    const formatter = new Intl.DateTimeFormat("pt-BR", {
         timeZone: "America/Sao_Paulo",
         hour: "numeric",
+        minute: "numeric",
         hour12: false
-    }).format(new Date());
-
-    const hora = parseInt(brasilia);
+    });
     
-    // Regra: Aberto das 17h às 23h
-    const horarioPermitido = hora >= 17 && hora < 23; 
+    const partes = formatter.formatToParts(agora);
+    const hora = parseInt(partes.find(p => p.type === 'hour').value);
+    const minuto = parseInt(partes.find(p => p.type === 'minute').value);
+
+    // Converte para um formato numérico comparável (ex: 17:00 vira 1700, 23:00 vira 2300)
+    const horarioAtualNumerico = (hora * 100) + minuto;
+    
+    // 2. Regra de Horário (17:00 às 23:00)
+    // 1700 é 17:00 | 2300 é 23:00
+    const horarioPermitido = horarioAtualNumerico >= 1700 && horarioAtualNumerico < 2300; 
+    
+    // 3. Estado de Abertura (Status do Firebase + Relógio)
     const estaAberto = horarioPermitido && !bloqueioManualOnline;
 
     const banner = document.getElementById('status-loja');
@@ -41,53 +78,70 @@ function verificarHorario() {
     const botoes = document.querySelectorAll('.btn-add');
 
     if (!estaAberto) {
-        if (banner) banner.style.display = 'flex'; 
-        
-        if (bloqueioManualOnline) {
-            if (titulo) titulo.innerText = "Pausa Temporária";
-            if (subtitulo) subtitulo.innerText = "Houve um imprevisto operacional. Voltaremos em breve! 🙏";
-            if (banner) banner.style.background = "linear-gradient(135deg, #78350f 0%, #451a03 100%)";
-        } else {
-            if (titulo) titulo.innerText = "Loja Fechada";
-            if (subtitulo) subtitulo.innerText = "Abriremos hoje das 17:00 às 23:00!";
-            if (banner) banner.style.background = "rgba(239, 68, 68, 0.95)"; 
+        // --- MODO LOJA FECHADA ---
+        if (banner) {
+            banner.style.display = 'flex'; 
+            
+            if (bloqueioManualOnline) {
+                if (titulo) titulo.innerHTML = '<i class="fas fa-pause-circle"></i> Pausa Temporária';
+                if (subtitulo) subtitulo.innerText = "Houve um imprevisto operacional. Voltaremos em breve! 🙏";
+                banner.style.background = "linear-gradient(135deg, #78350f 0%, #451a03 100%)";
+            } else {
+                if (titulo) titulo.innerHTML = '<i class="fas fa-clock"></i> Loja Fechada';
+                if (subtitulo) subtitulo.innerText = "Abriremos das 17:00 até às 23:00!";
+                banner.style.background = "rgba(239, 68, 68, 0.95)"; 
+            }
         }
         
         botoes.forEach(btn => {
             btn.classList.add('btn-disabled');
             btn.innerText = "Fechado agora";
             btn.style.pointerEvents = "none"; 
+            
             const card = btn.closest('.card');
-            if(card) card.onclick = () => {
-                banner?.classList.remove('shake-active');
-                void banner?.offsetWidth; 
-                banner?.classList.add('shake-active');
-            };
+            if (card) {
+                card.style.cursor = "not-allowed";
+                card.onclick = () => {
+                    if (banner) {
+                        banner.classList.remove('shake-active');
+                        void banner.offsetWidth; 
+                        banner.classList.add('shake-active');
+                    }
+                };
+            }
         });
     } else {
+        // --- MODO LOJA ABERTA ---
         if (banner) banner.style.display = 'none';
+        
         botoes.forEach(btn => {
             btn.classList.remove('btn-disabled');
             btn.innerText = "Adicionar";
             btn.style.pointerEvents = "auto";
+            
             const card = btn.closest('.card');
-            if(card) card.onclick = null;
+            if (card) {
+                card.style.cursor = "default";
+                card.onclick = null;
+            }
         });
     }
 }
 
-// Escuta o Firebase para atualizar o status em tempo real
+// --- INICIALIZAÇÃO E ESCUTADORES ---
+
+// 1. Quando o Firebase mudar o status (Pausa Manual)
 const statusRef = ref(db, 'configuracoes/lojaBloqueada');
 onValue(statusRef, (snapshot) => {
     bloqueioManualOnline = snapshot.val() || false;
-    verificarHorario();
+    verificarHorario(); 
 });
 
-// Verifica a hora a cada 30 segundos
-setInterval(verificarHorario, 30000);
+// 2. Quando a página carregar (Primeira checagem)
+document.addEventListener('DOMContentLoaded', verificarHorario);
 
-// --- COLE AQUI O RESTANTE DAS SUAS FUNÇÕES (adicionarAoCarrinho, enviarPedidoZap, etc) ---
-// ... (mantenha o resto do código que você já tem igual) ...
+// 3. Checagem automática a cada 30 segundos (Para virada de hora/minuto sozinho)
+setInterval(verificarHorario, 30000);
 
 // --- FUNÇÕES DO CARRINHO (EXPORTADAS PARA WINDOW) ---
 
