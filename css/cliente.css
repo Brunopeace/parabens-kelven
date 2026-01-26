@@ -34,7 +34,7 @@ body {
     right: 20px;
     background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
     color: white;
-    border: none;
+    border: 2px dashed #ffffff;
     padding: 12px 24px;
     border-radius: 50px;
     font-family: 'Poppins', sans-serif;
