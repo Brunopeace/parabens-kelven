@@ -245,17 +245,175 @@ body {
     z-index: 2000;
 }
 
-
-/* BANNER */
+/* HERO HORIZONTAL PREMIUM */
 .hero {
-    text-align: center;
-    padding: 80px 20px;
-    background: linear-gradient(to bottom, #FEFCE8, var(--bg-page));
+  margin: 5px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: linear-gradient(135deg, #D97706);
+  border-radius: 22px;
+  border: 2px dashed #ffffff;
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  animation: heroEnter 0.7s cubic-bezier(.4,0,.2,1) both;
+}
+
+/* Texto */
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
 }
 
 .hero h1 {
-    font-size: 2.8rem;
-    margin-bottom: 10px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  margin: 0;
+  color: #fff;
+}
+
+.hero p {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #fff;
+  opacity: 0.9;
+  margin: 0;
+  max-width: 320px;
+}
+
+/* ===================== */
+/* 🫧 BOLHAS DE SABÃO */
+/* ===================== */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.55;
+
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0.15)
+  );
+
+  filter: blur(0.5px);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* Bolha 1 */
+.bubble.b1 {
+  width: 80px;
+  height: 80px;
+  top: 10%;
+  right: 10%;
+  animation: float1 14s infinite;
+}
+
+/* Bolha 2 */
+.bubble.b2 {
+  width: 55px;
+  height: 55px;
+  bottom: 15%;
+  right: 35%;
+  animation: float2 18s infinite;
+}
+
+/* Bolha 3 */
+.bubble.b3 {
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  left: 8%;
+  animation: float3 16s infinite;
+}
+
+/* Animações orgânicas (todos os lados) */
+@keyframes float1 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-20px, 15px);
+  }
+  50% {
+    transform: translate(-10px, -20px);
+  }
+  75% {
+    transform: translate(15px, -10px);
+  }
+}
+
+@keyframes float2 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(18px, -12px);
+  }
+  50% {
+    transform: translate(-12px, -22px);
+  }
+  75% {
+    transform: translate(-18px, 10px);
+  }
+}
+
+@keyframes float3 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(12px, 18px);
+  }
+  50% {
+    transform: translate(22px, -8px);
+  }
+  75% {
+    transform: translate(-14px, -14px);
+  }
+}
+
+/* Entrada do hero */
+@keyframes heroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover elegante */
+.hero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s ease;
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .hero {
+    padding: 18px;
+  }
+
+  .hero h1 {
+    font-size: 1.45rem;
+  }
+
+  .hero p {
+    font-size: 0.9rem;
+  }
 }
 
 /* GRID E CARDS */
