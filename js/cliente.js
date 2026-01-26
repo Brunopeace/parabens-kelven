@@ -1,12 +1,16 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-      navigator.serviceWorker.register('service-worker.js').then(function(registration) {
-        console.log('✅ Service Worker registrado com sucesso:', registration);
-      }, function(err) {
-        console.log('Falha ao registrar o Service Worker:', err);
+      // Definimos o registro apontando para o arquivo correto
+      // E adicionamos o escopo './' para ele entender que é apenas nesta pasta
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(function(registration) {
+        console.log('✅ Service Worker do Salgados registrado com sucesso no escopo:', registration.scope);
+      })
+      .catch(function(err) {
+        console.log('❌ Falha ao registrar o Service Worker do Salgados:', err);
       });
     });
-  }
+}
 
 /* código para instalar o aplicativo */
 
