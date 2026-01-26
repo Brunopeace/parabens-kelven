@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// --- CONFIGURAÇÃO FIREBASE ---
+// 1. CONFIGURAÇÃO E INICIALIZAÇÃO
 const firebaseConfig = {
     apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
     authDomain: "salgadosdelicia-b0032.firebaseapp.com",
@@ -15,9 +15,79 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- ESTADO DO CARRINHO ---
+// 2. VARIÁVEIS GLOBAIS (Sempre no topo!)
+ // <-- Agora no lugar certo
 let carrinho = [];
 const SEU_TELEFONE = "5581982258462";
+
+// 3. LÓGICA DE HORÁRIO E STATUS ONLINE
+let bloqueioManualOnline = false;
+function verificarHorario() {
+    const brasilia = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: "numeric",
+        hour12: false
+    }).format(new Date());
+
+    const hora = parseInt(brasilia);
+    
+    // Regra: Aberto das 17h às 23h
+    const horarioPermitido = hora >= 17 && hora < 23; 
+    const estaAberto = horarioPermitido && !bloqueioManualOnline;
+
+    const banner = document.getElementById('status-loja');
+    const titulo = document.querySelector('.status-title');
+    const subtitulo = document.querySelector('.status-subtitle');
+    const botoes = document.querySelectorAll('.btn-add');
+
+    if (!estaAberto) {
+        if (banner) banner.style.display = 'flex'; 
+        
+        if (bloqueioManualOnline) {
+            if (titulo) titulo.innerText = "Pausa Temporária";
+            if (subtitulo) subtitulo.innerText = "Houve um imprevisto operacional. Voltaremos em breve! 🙏";
+            if (banner) banner.style.background = "linear-gradient(135deg, #78350f 0%, #451a03 100%)";
+        } else {
+            if (titulo) titulo.innerText = "Loja Fechada";
+            if (subtitulo) subtitulo.innerText = "Abriremos hoje das 17:00 às 23:00!";
+            if (banner) banner.style.background = "rgba(239, 68, 68, 0.95)"; 
+        }
+        
+        botoes.forEach(btn => {
+            btn.classList.add('btn-disabled');
+            btn.innerText = "Fechado agora";
+            btn.style.pointerEvents = "none"; 
+            const card = btn.closest('.card');
+            if(card) card.onclick = () => {
+                banner?.classList.remove('shake-active');
+                void banner?.offsetWidth; 
+                banner?.classList.add('shake-active');
+            };
+        });
+    } else {
+        if (banner) banner.style.display = 'none';
+        botoes.forEach(btn => {
+            btn.classList.remove('btn-disabled');
+            btn.innerText = "Adicionar";
+            btn.style.pointerEvents = "auto";
+            const card = btn.closest('.card');
+            if(card) card.onclick = null;
+        });
+    }
+}
+
+// Escuta o Firebase para atualizar o status em tempo real
+const statusRef = ref(db, 'configuracoes/lojaBloqueada');
+onValue(statusRef, (snapshot) => {
+    bloqueioManualOnline = snapshot.val() || false;
+    verificarHorario();
+});
+
+// Verifica a hora a cada 30 segundos
+setInterval(verificarHorario, 30000);
+
+// --- COLE AQUI O RESTANTE DAS SUAS FUNÇÕES (adicionarAoCarrinho, enviarPedidoZap, etc) ---
+// ... (mantenha o resto do código que você já tem igual) ...
 
 // --- FUNÇÕES DO CARRINHO (EXPORTADAS PARA WINDOW) ---
 
@@ -359,8 +429,9 @@ function monitorarMeuPedido() {
     });
 }
 
-// Inicialização
+// 4. INICIALIZAÇÃO AO CARREGAR
 window.onload = () => {
+    verificarHorario(); // Garante a checagem ao abrir
     exibirBotaoTrack();
     atualizarInterface();
     monitorarMeuPedido();
