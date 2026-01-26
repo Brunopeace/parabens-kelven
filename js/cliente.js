@@ -359,66 +359,6 @@ function monitorarMeuPedido() {
     });
 }
 
-
-
-function verificarHorario() {
-    const agora = new Date();
-    const hora = agora.getHours();
-    const bloqueioManual = localStorage.getItem('lojaBloqueada') === 'true';
-    const horarioPermitido = hora >= 17 && hora < 19;
-    const estaAberto = horarioPermitido && !bloqueioManual;
-
-    const banner = document.getElementById('status-loja');
-    const titulo = document.querySelector('.status-title');
-    const subtitulo = document.querySelector('.status-subtitle');
-    const botoes = document.querySelectorAll('.btn-add');
-
-    if (!estaAberto) {
-        if (banner) banner.style.display = 'flex'; 
-        
-        if (bloqueioManual) {
-            if (titulo) titulo.innerText = "Pausa Temporária";
-            if (subtitulo) subtitulo.innerText = "Houve um imprevisto operacional. Voltaremos em breve! 🙏";
-            if (banner) banner.style.background = "linear-gradient(135deg, #78350f 0%, #451a03 100%)";
-        } else {
-            if (titulo) titulo.innerText = "Loja Fechada";
-            if (subtitulo) subtitulo.innerText = "Abriremos das 17:00 às 23:00!";
-            if (banner) banner.style.background = ""; 
-        }
-        
-        botoes.forEach(btn => {
-            btn.classList.add('btn-disabled');
-            btn.innerText = "Fechado agora";
-            // Adicionamos o CSS para bloquear o clique mas permitir o "shake"
-            btn.style.pointerEvents = "none"; 
-            
-            // Se o usuário clicar no card ou na área do botão, mostramos o erro
-            btn.parentElement.onclick = () => {
-                if(!estaAberto && banner) {
-                    banner.classList.remove('shake-active');
-                    void banner.offsetWidth; 
-                    banner.classList.add('shake-active');
-                }
-            };
-        });
-    } else {
-        // --- LOJA ABERTA ---
-        if (banner) banner.style.display = 'none';
-        botoes.forEach(btn => {
-            btn.classList.remove('btn-disabled');
-            btn.innerText = "Adicionar";
-            btn.style.pointerEvents = "auto"; // Libera o clique
-            btn.parentElement.onclick = null; // Remove a trava do card
-        });
-    }
-}
-
-// Chame a função
-document.addEventListener('DOMContentLoaded', verificarHorario);
-
-// Verifica novamente a cada 30 segundos (caso o horário mude enquanto o usuário navega)
-setInterval(verificarHorario, 30000);
-
 // Inicialização
 window.onload = () => {
     exibirBotaoTrack();
