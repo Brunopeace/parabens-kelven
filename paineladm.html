@@ -38,67 +38,125 @@
         </div>
     </div>
     
-    <script>
-function atualizarBotaoStatus() {
-    const isBloqueada = localStorage.getItem('lojaBloqueada') === 'true';
-    const btn = document.getElementById('btn-toggle-emergencia');
-    const textoBtn = document.getElementById('btn-texto-emergencia');
-    const tituloStatus = document.getElementById('txt-status-loja');
-    const descStatus = document.getElementById('desc-status-loja');
-
-    if (!btn || !tituloStatus || !descStatus) return;
-
-    if (isBloqueada) {
-        // --- MODO PAUSA MANUAL ATIVO ---
-        btn.className = "btn-emergency closed-now";
-        if (textoBtn) textoBtn.innerText = "Reabrir Loja agora";
-        
-        tituloStatus.innerHTML = `
-            Status: <span style="color: #dc2626; font-weight: 800;">
-                <span class="pulse-red"></span> LOJA FECHADA
-            </span>`;
-        
-        descStatus.innerHTML = "<strong>Você fechou a loja:</strong> 'Assim que você chegar do seu imprevisto, Clique no botão novamente para reabrir a sua loja!'";
-        
-        // Efeito visual no card de controle
-        btn.parentElement.style.borderLeft = "6px solid #dc2626";
-        btn.parentElement.style.background = "#fffafa";
-    } else {
-        // --- MODO FLUXO AUTOMÁTICO ---
-        btn.className = "btn-emergency open-now";
-        if (textoBtn) textoBtn.innerText = "Fechar Loja imprevisto";
-        
-        tituloStatus.innerHTML = `
-            Status: <span style="color: #10b981; font-weight: 800;">
-                <i class="fas fa-check-circle"></i> LOJA ABERTA
-            </span>`;
-        
-        descStatus.innerHTML = "<strong>Horario:</strong> <br> A loja irá fecha automaticamente 18:00 as 23:00";
-        
-        // Reset do efeito visual
-        btn.parentElement.style.borderLeft = "6px solid #10b981";
-        btn.parentElement.style.background = "#fff";
-    }
-}
-
-function toggleEmergencia() {
-    const atual = localStorage.getItem('lojaBloqueada') === 'true';
-    localStorage.setItem('lojaBloqueada', !atual);
     
-    // Adiciona uma pequena vibração ao botão ao clicar (estilo nativo)
-    const btn = document.getElementById('btn-toggle-emergencia');
-    btn.style.transform = "scale(0.95)";
-    
-    setTimeout(() => {
-        btn.style.transform = "scale(1)";
-        atualizarBotaoStatus();
-    }, 100);
-}
+    <script type="module">
+    // 1. IMPORTAÇÕES COMPLETAS (Adicionado update e remove)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Inicialização única
-document.addEventListener('DOMContentLoaded', atualizarBotaoStatus);
+    const firebaseConfig = {
+        apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
+        authDomain: "salgadosdelicia-b0032.firebaseapp.com",
+        databaseURL: "https://salgadosdelicia-b0032-default-rtdb.firebaseio.com",
+        projectId: "salgadosdelicia-b0032",
+        storageBucket: "salgadosdelicia-b0032.firebasestorage.app",
+        messagingSenderId: "273362591423",
+        appId: "1:273362591423:web:1b179a8b9003df8d33300a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    // Referências e Elementos
+    const statusRef = ref(db, 'configuracoes/lojaBloqueada');
+    const container = document.getElementById('lista-pedidos-container'); // <-- CORREÇÃO 1
+    let lojaEstaBloqueada = false;
+
+    // --- ESCUTA O STATUS DA LOJA ---
+    onValue(statusRef, (snapshot) => {
+        lojaEstaBloqueada = snapshot.val() || false;
+        atualizarBotaoStatus(lojaEstaBloqueada);
+    });
+
+    window.atualizarBotaoStatus = function(isBloqueada) {
+        const btn = document.getElementById('btn-toggle-emergencia');
+        const textoBtn = document.getElementById('btn-texto-emergencia');
+        const tituloStatus = document.getElementById('txt-status-loja');
+        const descStatus = document.getElementById('desc-status-loja');
+        if (!btn) return;
+
+        if (isBloqueada) {
+            btn.className = "btn-emergency closed-now";
+            if (textoBtn) textoBtn.innerText = "Reabrir Loja agora";
+            tituloStatus.innerHTML = 'Status: <span style="color: #dc2626; font-weight: 800;">LOJA FECHADA</span>';
+            descStatus.innerHTML = "<strong>Atenção:</strong> A loja está pausada para todos os clientes.";
+            btn.parentElement.style.borderLeft = "6px solid #dc2626";
+        } else {
+            btn.className = "btn-emergency open-now";
+            if (textoBtn) textoBtn.innerText = "Fechar Loja (Imprevisto)";
+            tituloStatus.innerHTML = 'Status: <span style="color: #10b981; font-weight: 800;">LOJA ABERTA</span>';
+            descStatus.innerHTML = "<strong>Horário:</strong> Aberta (Fecha automático 23:00)";
+            btn.parentElement.style.borderLeft = "6px solid #10b981";
+        }
+    };
+
+    window.toggleEmergencia = function() {
+        set(statusRef, !lojaEstaBloqueada);
+    };
+
+    // --- ESCUTAR PEDIDOS EM TEMPO REAL ---
+    onValue(ref(db, 'pedidos'), (snapshot) => {
+        const pedidos = snapshot.val();
+        if (!container) return;
+        container.innerHTML = ""; 
+
+        if (!pedidos) {
+            container.innerHTML = "<p style='text-align:center; padding:20px;'>Aguardando novos pedidos...</p>";
+            document.getElementById('painel-status').innerText = "Painel Ativo";
+            return;
+        }
+
+        for (let id in pedidos) {
+            const p = pedidos[id];
+            const itensSeguros = p.itens || []; 
+            const listaItens = itensSeguros.map(item => {
+                const extrasSeguros = item.extras || [];
+                return `<li>${item.nome} ${extrasSeguros.length > 0 ? `<small>(${extrasSeguros.join(', ')})</small>` : ''}</li>`;
+            }).join('');
+
+            const card = document.createElement('div');
+            card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
+            card.innerHTML = `
+                <div class="pedido-info">
+                    <h3>#${id.slice(-4)} - ${(p.cliente || 'Sem Nome').toUpperCase()}</h3>
+                    <p><strong>📞 Tel:</strong> ${p.telefone}</p>
+                    <ul class="lista-itens-detalhe">${listaItens}</ul>
+                    <p class="total-pedido">Total: R$ ${(p.total || 0).toFixed(2)}</p>
+                </div>
+                <div class="status-group">
+                    <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
+                    <button onclick="mudarStatus('${id}', 2)" class="btn-status btn-ready">Entregar</button>
+                    <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
+                </div>
+                <div class="whatsapp-tools">
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">No Fogo</button>
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">Saiu Entrega</button>
+                </div>`;
+            container.appendChild(card);
+        }
+    });
+
+    // Funções Globais expostas para os botões (Usando as importações corrigidas)
+    window.mudarStatus = (id, novoStatus) => {
+        update(ref(db, `pedidos/${id}`), { status: novoStatus }); // <-- CORREÇÃO 2
+    };
+
+    window.excluirPedido = (id) => {
+        if (confirm("Deseja remover este pedido do painel?")) {
+            remove(ref(db, `pedidos/${id}`)); // <-- CORREÇÃO 2
+        }
+    };
+
+    window.avisarWA = (telefone, nome, tipo) => {
+        let numeroLimpo = telefone.replace(/\D/g, '');
+        if (numeroLimpo.length <= 11) numeroLimpo = "55" + numeroLimpo;
+        const nomeLoja = "*Salgados Delícia* 🥟";
+        let msg = (tipo === 'preparo') 
+            ? `*BOAS NOTÍCIAS, ${nome.toUpperCase()}!* 🎉\nSeu pedido começou a ser preparado! 🔥\n${nomeLoja}`
+            : `*ESTÁ A CAMINHO!* 🛵💨\nO entregador saiu com seus salgados quentinhos, ${nome}! 😍\n${nomeLoja}`;
+        window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
 </script>
-   
-    <script type="module" src="js/adm.js"></script>
+
 </body>
 </html>
