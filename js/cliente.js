@@ -1,3 +1,55 @@
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+        console.log('✅ Service Worker registrado com sucesso:', registration);
+      }, function(err) {
+        console.log('Falha ao registrar o Service Worker:', err);
+      });
+    });
+  }
+
+/* código para instalar o aplicativo */
+
+  let deferredPrompt;
+
+// 1. Ouve o evento do navegador que diz que o App pode ser instalado
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Impede o Chrome de mostrar o prompt automático chato
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Verifica se o botão já existe para não criar duplicados
+    if (!document.querySelector('.btn-install-pwa')) {
+        const installButton = document.createElement('button');
+        installButton.className = 'btn-install-pwa';
+        installButton.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Instalar Aplicativo';
+        document.body.appendChild(installButton);
+
+        // 2. Lógica do clique
+        installButton.addEventListener('click', () => {
+            // Mostra a pergunta do sistema (Deseja instalar?)
+            deferredPrompt.prompt(); 
+
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação');
+                    installButton.remove(); // Só remove se ele aceitou
+                } else {
+                    console.log('Usuário recusou, o botão continuará aqui.');
+                }
+                deferredPrompt = null; 
+            });
+        });
+    }
+});
+
+// 3. REMOÇÃO DEFINITIVA: Ouve o evento de conclusão de instalação
+window.addEventListener('appinstalled', () => {
+    console.log('PWA instalado com sucesso!');
+    const btn = document.querySelector('.btn-install-pwa');
+    if (btn) btn.remove(); // Remove o botão caso ainda esteja lá
+});
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -22,31 +74,6 @@ const SEU_TELEFONE = "5581982258462";
 
 // 3. LÓGICA DE HORÁRIO E STATUS ONLINE
 let bloqueioManualOnline = false;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function verificarHorario() {
     // 1. Obtém a data e hora atual de Brasília com precisão
