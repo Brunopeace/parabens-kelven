@@ -4,7 +4,7 @@
 self.addEventListener('install', (event) => {
   self.skipWaiting(); // força ativação imediata
 
-  const CACHE_NAME = 'salgados-delicia-v2';
+  const CACHE_NAME = 'salgados-delicia-v3';
   const urlsToCache = [
       '/',
       '/index.html',
@@ -33,7 +33,7 @@ self.addEventListener('activate', (event) => {
       caches.keys().then((cacheNames) => {
           return Promise.all(
               cacheNames.map((cache) => {
-                  if (cache !== 'gerenciador-de-clientes-v3') {
+                  if (cache !== 'salgados-delicia-v3') {
                       console.log('Service Worker: removendo cache antigo:', cache);
                       return caches.delete(cache);
                   }
