@@ -27,134 +27,96 @@ body {
     line-height: 1.6;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* BANNER DE STATUS - DESIGN PREMIUM NATIVO */
-.status-loja {
-    position: fixed; /* Fixado para sobrepor o conteúdo */
-    top: 70px;
+/* CONTAINER PRINCIPAL DO BANNER */
+#status-loja {
+    position: fixed;
+    margin-top: 80px; /* Margem do topo para parecer um balão flutuante */
     left: 50%;
-    transform: translateX(-50%); /* Centraliza perfeitamente */
+    transform: translateX(-50%); /* Centraliza na tela */
     width: 90%;
-    max-width: 450px;
-    padding: 12px 20px;
-    display: flex;
+    max-width: 500px;
+    min-height: 80px;
+    display: none;
+    flex-direction: column;
     align-items: center;
-    gap: 15px;
-    border-radius: 18px;
-    font-family: 'Poppins', sans-serif;
-    z-index: 2000;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(8px); /* Efeito de vidro moderno */
+    justify-content: center;
+    z-index: 10000;
+    
+    /* ESTILO VISUAL */
+    padding: 20px;
+    border-radius: 20px;
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px); /* Efeito de vidro fosco */
+    -webkit-backdrop-filter: blur(12px);  
+    border: 2px dashed #ffffff;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Estado: Fechado (Horário ou Manual) */
-.status-loja.closed {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+/* TÍTULO EM DESTAQUE */
+.status-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     color: #ffffff;
 }
 
-/* Ícone com animação de pulso sutil */
-.status-loja i {
-    font-size: 1.2rem;
-    animation: pulse-icon 2s infinite;
+/* ÍCONE PISCANTE (Opcional, você pode adicionar via JS) */
+.status-title::before {
+    content: "●";
+    color: #fff;
+    animation: blink 1.5s infinite;
 }
 
-/* Estrutura de Texto Interna */
-.status-text-container {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.3;
-}
-
-.status-title {
-    font-weight: 700;
-    font-size: 0.95rem;
-    letter-spacing: -0.3px;
-}
-
+/* SUBTÍTULO / HORÁRIO */
 .status-subtitle {
+    font-size: 0.95rem;
     font-weight: 400;
-    font-size: 0.78rem;
+    margin-top: 8px;
     opacity: 0.9;
+    line-height: 1.4;
 }
 
-/* --- ANIMAÇÃO SHAKE ESTILO iOS --- */
-@keyframes shake {
-    0%, 100% { 
-        transform: translateX(-50%) scale(1); 
-    }
-    20%, 60% { 
-        transform: translateX(-52%) scale(1.02); 
-        filter: brightness(1.2);
-    }
-    40%, 80% { 
-        transform: translateX(-48%) scale(1.02); 
-    }
+/* ESTADO DOS BOTÕES DESATIVADOS */
+.btn-disabled {
+    background: #d1d5db !important; /* Cinza claro */
+    color: #6b7280 !important; /* Texto cinza escuro */
+    cursor: not-allowed !important;
+    transform: none !important;
+    filter: grayscale(1);
+    box-shadow: none !important;
+    border: 2px solid #e5e7eb !important;
 }
 
-/* Classe disparada via JS quando houver erro de clique */
-.status-loja.shake-active {
-    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+/* ANIMAÇÃO DE TREMER (SHAKE) QUANDO CLICADO */
+.shake-active {
+    animation: shakeAnim 0.6s ease-in-out;
 }
 
-/* Animação extra para o ícone */
-@keyframes pulse-icon {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1); }
+@keyframes shakeAnim {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    15%, 45%, 75% { transform: translateX(-52%) scale(1.02); }
+    30%, 60%, 90% { transform: translateX(-48%) scale(1.02); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* RESPONSIVIDADE PARA CELULAR */
+@media (max-width: 480px) {
+    #status-loja {
+        width: 95%;
+        top: 10px;
+        padding: 15px;
+    }
+    .status-title { font-size: 1.1rem; }
 }
 
 /* Efeito para botões desativados nos cards */
@@ -164,28 +126,6 @@ body {
     cursor: not-allowed !important;
     pointer-events: auto; /* Mantém eventos para o shake funcionar */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* NAVEGAÇÃO */
 .header {
@@ -541,18 +481,6 @@ body {
 
 .btn-whats:hover { filter: brightness(1.1); }
 
-
-
-
-
-
-
-
-
-
-
-
-
 .grupo-opcao {
     display: flex;
     gap: 15px;
@@ -582,25 +510,6 @@ body {
 .limpar-opcoes:hover {
     color: #ff0000;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* STATUS DO PEDIDO (TIMELINE ESTILO APP) */
 .status-step {
