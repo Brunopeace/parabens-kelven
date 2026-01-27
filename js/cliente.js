@@ -385,16 +385,19 @@ window.enviarPedidoZap = function() {
     }
 
     // 2. LÓGICA DE SUGESTÃO (CROSS-SELL)
-    // Se não tem bebida E ainda não pulou a sugestão, mostra o modal
     if (!temBebida() && !window.pulouSugestao) {
         document.getElementById('modal-sugestao').classList.add('active');
-        return; // Interrompe o envio para esperar a decisão
+        return; 
     }
 
     // 3. SE CHEGOU AQUI, PROCESSA O ENVIO FINAL
-    const totalCalculado = carrinho.reduce((acc, item) => acc + item.preco, 0);
+    // CORREÇÃO: Calcula o total multiplicando PREÇO x QUANTIDADE de cada item
+    const totalCalculado = carrinho.reduce((acc, item) => {
+        const qtd = item.quantidade || 1;
+        return acc + (item.preco * qtd);
+    }, 0);
 
-    // Objeto para o Firebase
+    // Objeto para o Firebase (Enviando o total correto)
     const pedidoData = {
         cliente: nomeCliente,
         telefone: telCliente,
@@ -414,18 +417,23 @@ window.enviarPedidoZap = function() {
         localStorage.setItem('meuPedidoId', pedidoId);
         localStorage.setItem('pedidoAtivo', 'true');
         
-        // Reset da flag de sugestão para o próximo pedido futuro
         window.pulouSugestao = false;
 
-        // Formatar mensagem WhatsApp (Com Emojis Hexadecimais para evitar erro de código)
+        // Formatar mensagem WhatsApp
         let texto = `*NOVO PEDIDO #${pedidoId.slice(-4)}*\n`;
         texto += `\uD83D\uDC64 *Cliente:* ${nomeCliente}\n`;
         texto += `----------------------------------\n\n`;
         
         carrinho.forEach(item => {
-            texto += `\u2705 *${item.nome}*\n`;
-            if(item.extras.length > 0) texto += `   _Op\u00E7\u00F5es: ${item.extras.join(', ')}_\n`;
-            texto += `   Pre\u00E7o: R$ ${item.preco.toFixed(2)}\n\n`;
+            const qtd = item.quantidade || 1;
+            const subtotal = item.preco * qtd;
+            
+            // CORREÇÃO: Mostra a quantidade no texto do WhatsApp ex: (2x) Pastel
+            texto += `\u2705 *(${qtd}x) ${item.nome}*\n`;
+            if(item.extras && item.extras.length > 0) {
+                texto += `   _Op\u00E7\u00F5es: ${item.extras.join(', ')}_\n`;
+            }
+            texto += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
         });
         
         texto += `----------------------------------\n`;
@@ -434,14 +442,19 @@ window.enviarPedidoZap = function() {
         texto += `_Rastreie seu pedido clicando no bot\u00E3o 'Acompanhar Pedido' no site!_`;
         
         exibirBotaoTrack();
-        window.open(`https://wa.me/${SEU_TELEFONE}?text=${encodeURIComponent(texto)}`, '_blank');
+        
+        // Use a variável do seu telefone configurada ou substitua aqui
+        const foneVendedor = "5581999999999"; // Exemplo: 55 + DDD + Numero
+        window.open(`https://wa.me/${foneVendedor}?text=${encodeURIComponent(texto)}`, '_blank');
         
         // Limpar interface
         carrinho = [];
+        // Limpa também o localStorage do carrinho
+        localStorage.removeItem('carrinho');
+        
         atualizarInterface();
         if(document.getElementById('modal-cart')) document.getElementById('modal-cart').classList.remove('active');
         
-        // Iniciar monitoramento do status imediatamente
         monitorarMeuPedido();
 
     }).catch(err => {
