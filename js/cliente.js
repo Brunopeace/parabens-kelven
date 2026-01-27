@@ -428,7 +428,6 @@ window.enviarPedidoZap = function() {
             const qtd = item.quantidade || 1;
             const subtotal = item.preco * qtd;
             
-            // CORREÇÃO: Mostra a quantidade no texto do WhatsApp ex: (2x) Pastel
             texto += `\u2705 *(${qtd}x) ${item.nome}*\n`;
             if(item.extras && item.extras.length > 0) {
                 texto += `   _Op\u00E7\u00F5es: ${item.extras.join(', ')}_\n`;
@@ -443,8 +442,7 @@ window.enviarPedidoZap = function() {
         
         exibirBotaoTrack();
         
-        // Use a variável do seu telefone configurada ou substitua aqui
-        const foneVendedor = "5581999999999"; // Exemplo: 55 + DDD + Numero
+        const foneVendedor = "5581982258462";
         window.open(`https://wa.me/${foneVendedor}?text=${encodeURIComponent(texto)}`, '_blank');
         
         // Limpar interface
