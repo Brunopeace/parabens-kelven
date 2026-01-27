@@ -2,12 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Painel de Controle | Salgados Delícia</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/adm.css">
-<link rel="apple-touch-icon" href="img/icone-512.png">
+    <link rel="apple-touch-icon" href="img/icone-512.png">
 
 </head>
 <body>
@@ -41,7 +41,7 @@
     
     
     <script type="module">
-    // 1. IMPORTAÇÕES COMPLETAS (Adicionado update e remove)
+    // 1. IMPORTAÇÕES COMPLETAS
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -60,7 +60,7 @@
     
     // Referências e Elementos
     const statusRef = ref(db, 'configuracoes/lojaBloqueada');
-    const container = document.getElementById('lista-pedidos-container'); // <-- CORREÇÃO 1
+    const container = document.getElementById('lista-pedidos-container'); 
     let lojaEstaBloqueada = false;
 
     // --- ESCUTA O STATUS DA LOJA ---
@@ -107,22 +107,40 @@
             return;
         }
 
-        for (let id in pedidos) {
+        // Transformar em array e inverter para os novos aparecerem primeiro
+        const idsOrdenados = Object.keys(pedidos).reverse();
+
+        idsOrdenados.forEach(id => {
             const p = pedidos[id];
             const itensSeguros = p.itens || []; 
+            
+            // ALTERAÇÃO: Agora inclui a quantidade (xQtd) no texto do item
             const listaItens = itensSeguros.map(item => {
                 const extrasSeguros = item.extras || [];
-                return `<li>${item.nome} ${extrasSeguros.length > 0 ? `<small>(${extrasSeguros.join(', ')})</small>` : ''}</li>`;
+                const qtd = item.quantidade || 1;
+                           
+                return `
+                    <li style="margin-bottom: 5px; list-style: none;">
+                        <strong style="color: #D97706; margin-right: 10px;">(x${qtd})</strong> ${item.nome}
+                        ${extrasSeguros.length > 0 ? `<br><small style="color: #6B7280; margin-left: 20px;">↳ ${extrasSeguros.join(', ')}</small>` : ''}
+                    </li>`;
             }).join('');
 
             const card = document.createElement('div');
             card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
             card.innerHTML = `
                 <div class="pedido-info">
-                    <h3>#${id.slice(-4)} - ${(p.cliente || 'Sem Nome').toUpperCase()}</h3>
+                    <div style="display: flex; justify-content: space-between;">
+                        <h3><strong class="txt-nome-pedido" style=" margin-right:11px;">Pedido:</strong> #${id.slice(-4)} <amall class="txt-nome-cliente">Cliente</amall> - <amall>${(p.cliente || 'Sem Nome').toUpperCase()}</amall></h3>
+                        <small>${p.data || ''}</small>
+                    </div>
                     <p><strong>📞 Tel:</strong> ${p.telefone}</p>
-                    <ul class="lista-itens-detalhe">${listaItens}</ul>
-                    <p class="total-pedido">Total: R$ ${(p.total || 0).toFixed(2)}</p>
+                    <ul class="lista-itens-detalhe" style="padding: 0; margin: 10px 0;">
+                        ${listaItens}
+                    </ul>
+                    <p class="total-pedido" style="font-weight: 800; font-size: 1.1rem; border-top: 1px solid #eee; pt: 5px;">
+                        Total: R$ ${(p.total || 0).toFixed(2)}
+                    </p>
                 </div>
                 <div class="status-group">
                     <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
@@ -130,21 +148,25 @@
                     <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
                 </div>
                 <div class="whatsapp-tools">
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">No Fogo</button>
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">Saiu Entrega</button>
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">
+                        <i class="fab fa-whatsapp"></i> Preparando
+                    </button>
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">
+                        <i class="fab fa-whatsapp"></i> Saiu para Entrega
+                    </button>
                 </div>`;
             container.appendChild(card);
-        }
+        });
     });
 
-    // Funções Globais expostas para os botões (Usando as importações corrigidas)
+    // Funções Globais expostas para os botões
     window.mudarStatus = (id, novoStatus) => {
-        update(ref(db, `pedidos/${id}`), { status: novoStatus }); // <-- CORREÇÃO 2
+        update(ref(db, `pedidos/${id}`), { status: novoStatus });
     };
 
     window.excluirPedido = (id) => {
         if (confirm("Deseja remover este pedido do painel?")) {
-            remove(ref(db, `pedidos/${id}`)); // <-- CORREÇÃO 2
+            remove(ref(db, `pedidos/${id}`));
         }
     };
 
