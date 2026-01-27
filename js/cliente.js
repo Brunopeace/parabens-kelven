@@ -12,6 +12,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+
 /* código para instalar o aplicativo */
 
   let deferredPrompt;
@@ -215,7 +216,7 @@ function atualizarInterface() {
     const lista = document.getElementById('itens-lista');
     const totalE = document.getElementById('total-val');
     
-    // Referências dos elementos que vamos mostrar/esconder
+    // Referências dos elementos de checkout
     const pixBox = document.querySelector('.pix-box');
     const totalContainer = document.querySelector('.total-container');
     const btnWhats = document.querySelector('.btn-whats');
@@ -235,31 +236,47 @@ function atualizarInterface() {
             </div>
         `;
         
-        // Esconde os elementos de checkout se estiver vazio
         if(pixBox) pixBox.style.display = 'none';
         if(totalContainer) totalContainer.style.display = 'none';
         if(btnWhats) btnWhats.style.display = 'none';
         if(identificacao) identificacao.style.display = 'none';
 
     } else {
-        // Mostra os elementos de checkout se houver itens
         if(pixBox) pixBox.style.display = 'block';
         if(totalContainer) totalContainer.style.display = 'flex';
         if(btnWhats) btnWhats.style.display = 'flex';
         if(identificacao) identificacao.style.display = 'flex';
 
         carrinho.forEach((item, index) => {
-            total += item.preco;
+            if (!item.quantidade) item.quantidade = 1;
+            
+            const subtotalItem = item.preco * item.quantidade;
+            total += subtotalItem;
+
+            // LÓGICA DINÂMICA: Se for 1, mostra lixeira. Se for mais, mostra sinal de menos.
+            const btnEsquerdoConteudo = item.quantidade === 1 
+                ? '<i class="far fa-trash-alt" style="font-size: 0.9rem; color: #ef4444;"></i>' 
+                : '<span style="font-size: 1.4rem; line-height: 1;">-</span>';
+
             lista.innerHTML += `
-                <div class="item-carrinho" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f4f4f5;">
-                    <div>
-                        <strong style="color: #18181b;">${item.nome}</strong><br>
-                        <small style="color: #71717a;">${item.extras.length > 0 ? item.extras.join(', ') : 'Sem opcionais'}</small>
+                <div class="item-carrinho" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f4f4f5;">
+                    <div style="flex: 1; padding-right: 10px;">
+                        <strong style="color: #18181b; display: block; font-size: 0.95rem;">${item.nome}</strong>
+                        <small style="color: #71717a; display: block; margin-bottom: 4px; font-size: 0.8rem;">
+                            ${item.extras && item.extras.length > 0 ? item.extras.join(', ') : 'Padrão'}
+                        </small>
+                        <span style="font-weight: 700; color: #D97706; font-size: 0.9rem;">R$ ${subtotalItem.toFixed(2)}</span>
                     </div>
-                    <div class="item-acoes" style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-weight: 600; color: #18181b;">R$ ${item.preco.toFixed(2)}</span>
-                        <button onclick="removerItem(${index})" style="color:#ef4444; border:none; background:#fee2e2; width: 30px; height: 30px; border-radius: 50%; cursor:pointer; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-times"></i>
+
+                    <div style="display: flex; align-items: center; gap: 12px; background: #f4f4f5; padding: 6px 14px; border-radius: 50px; border: 1px solid #e4e4e7; min-width: 100px; justify-content: space-between;">
+                        <button onclick="alterarQuantidade(${index}, -1)" style="border:none; background:none; color:#D97706; cursor:pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;">
+                            ${btnEsquerdoConteudo}
+                        </button>
+                        
+                        <span style="font-weight: 800; font-size: 1rem; color: #18181b; min-width: 15px; text-align: center;">${item.quantidade}</span>
+                        
+                        <button onclick="alterarQuantidade(${index}, 1)" style="border:none; background:none; color:#D97706; font-weight:bold; font-size: 1.4rem; cursor:pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; line-height: 1;">
+                            +
                         </button>
                     </div>
                 </div>
@@ -268,52 +285,24 @@ function atualizarInterface() {
     }
     
     totalE.innerText = `R$ ${total.toFixed(2)}`;
+    localStorage.setItem('carrinho', JSON.stringify(carrinho));
 }
 
+// Funções de suporte atualizadas
+window.alterarQuantidade = function(index, mudanca) {
+    if (!carrinho[index].quantidade) carrinho[index].quantidade = 1;
+    carrinho[index].quantidade += mudanca;
 
-// Função para atualizar o preço na tela quando mudar o sabor (Opcional)
-document.getElementById('sabor-pastel')?.addEventListener('change', function() {
-    const select = this;
-    const preco = select.options[select.selectedIndex].getAttribute('data-preco');
-    document.getElementById('preco-dinamico').innerText = `R$ ${parseFloat(preco).toFixed(2)}`;
-});
+    if (carrinho[index].quantidade <= 0) {
+        window.removerItem(index);
+    } else {
+        atualizarInterface();
+    }
+};
 
-window.adicionarPastelDinamico = function(botao) {
-    const card = botao.closest('.card');
-    const selectSabor = card.querySelector('#sabor-pastel');
-    
-    // 1. Captura o nome do sabor selecionado no <select>
-    const nomeSabor = selectSabor.value;
-    
-    // 2. Captura o preço (convertendo de string para número)
-    const precoSabor = parseFloat(selectSabor.options[selectSabor.selectedIndex].getAttribute('data-preco'));
-    
-    // 3. Captura os adicionais (radios marcados)
-    const extras = [];
-    card.querySelectorAll('.extra:checked').forEach(el => extras.push(el.value));
-
-    // 4. Adiciona ao array global do carrinho
-    carrinho.push({
-        nome: nomeSabor,
-        preco: precoSabor,
-        extras: extras
-    });
-
-    // 5. Atualiza o contador e a lista do carrinho
+window.removerItem = function(index) {
+    carrinho.splice(index, 1);
     atualizarInterface();
-    
-    // 6. CHAMA A SUA FUNÇÃO DE POPUP PASSANDO O NOME DO SABOR
-    mostrarPopup(nomeSabor);
-
-    // 7. Feedback visual extra no próprio botão
-    const textoOriginal = botao.innerText;
-    botao.innerText = "Adicionado! ✅";
-    botao.disabled = true; // Evita cliques duplos rápidos
-    
-    setTimeout(() => {
-        botao.innerText = textoOriginal;
-        botao.disabled = false;
-    }, 1500);
 };
 
 // --- INTERFACE E POPUPS ---
