@@ -132,7 +132,7 @@
                 <div class="pedido-info">
                     <div style="display: flex; justify-content: space-between;">
                         <h3><strong class="txt-nome-pedido" style=" margin-right:11px;">Pedido:</strong> #${id.slice(-4)} <amall class="txt-nome-cliente">Cliente</amall> - <amall>${(p.cliente || 'Sem Nome').toUpperCase()}</amall></h3>
-                        <small>${p.data || ''}</small>
+                        <small style=" color: green; margin-top: 5px;">${p.data || ''}</small>
                     </div>
                     <p><strong>📞 Tel:</strong> ${p.telefone}</p>
                     <ul class="lista-itens-detalhe" style="padding: 0; margin: 10px 0;">
