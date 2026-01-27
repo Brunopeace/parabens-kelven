@@ -590,22 +590,6 @@ body {
     margin-bottom: 25px;
 }
 
-/* ÁREA DE FECHAMENTO */
-.checkout-area {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.total-container {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: #18181b;
-    padding: 10px 0;
-}
-
 #total-val { color: #D97706; }
 
 /* FORMULÁRIO DE IDENTIFICAÇÃO DENTRO DO CARRINHO */
@@ -836,14 +820,50 @@ body {
 
 .checkout-area {
     margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
+/* Container que segura o Total e o Link */
 .total-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* Faz os itens empilharem (um abaixo do outro) */
+    margin: 20px 0;
+    padding: 10px 0;
+    width: 100%;
+}
+
+/* Linha do Preço: Total na esquerda, Valor na direita */
+.total-row {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    width: 100%;
     font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 20px;
+    font-weight: 800;
+    color: #18181b;
+}
+
+/* Estilo do link "Adicionar mais itens" */
+.btn-voltar {
+    
+    margin-top: 35px; /* O espaço exato que você pediu */
+    font-size: 13px;
+    color: #D97706;
+    text-decoration: underline;
+    font-weight: 400;
+    display: block; /* Garante que ele ocupe a linha toda embaixo */
+}
+
+.div-btn-voltar {
+  display: flex;
+  justify-content: center;
+}
+
+/* Opcional: Destaque para o valor em dinheiro */
+#total-val {
+    color: #D97706; /* Laranja do seu projeto */
 }
 
 .nao-obrigado {
