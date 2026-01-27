@@ -305,6 +305,81 @@ window.removerItem = function(index) {
     atualizarInterface();
 };
 
+// 1. LÓGICA PARA TROCAR O PREÇO NO CARD AO SELECIONAR O SABOR
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'sabor-pastel') {
+        const select = e.target;
+        const preco = select.options[select.selectedIndex].getAttribute('data-preco');
+        const precoDinamico = document.getElementById('preco-dinamico');
+        
+        if (precoDinamico && preco) {
+            precoDinamico.innerText = `R$ ${parseFloat(preco).toFixed(2).replace('.', ',')}`;
+        }
+    }
+});
+
+// 2. FUNÇÃO PARA ADICIONAR O PASTEL AO CARRINHO (ATUALIZADA)
+window.adicionarPastelDinamico = function(botao) {
+    const card = botao.closest('.card');
+    const selectSabor = card.querySelector('#sabor-pastel');
+    
+    // Captura o nome e o preço do sabor selecionado no momento
+    const nomeSabor = selectSabor.value;
+    const precoSabor = parseFloat(selectSabor.options[selectSabor.selectedIndex].getAttribute('data-preco'));
+    
+    // Captura os adicionais (radios marcados)
+    const extras = [];
+    card.querySelectorAll('.extra:checked').forEach(el => extras.push(el.value));
+
+    // Verifica se já existe ESSE MESMO pastel com os MESMOS extras no carrinho
+    const itemExistente = carrinho.find(item => 
+        item.nome === nomeSabor && 
+        JSON.stringify(item.extras) === JSON.stringify(extras)
+    );
+
+    if (itemExistente) {
+        // Se já existe, apenas aumenta a quantidade
+        itemExistente.quantidade = (itemExistente.quantidade || 1) + 1;
+    } else {
+        // Se é novo, adiciona ao array com quantidade 1
+        carrinho.push({
+            nome: nomeSabor,
+            preco: precoSabor,
+            extras: extras,
+            quantidade: 1 
+        });
+    }
+
+    // Atualiza a interface do carrinho (aquela com os botões + e -)
+    atualizarInterface();
+    
+    // Mostra o popup de sucesso
+    if (typeof mostrarPopup === "function") {
+        mostrarPopup(nomeSabor);
+    }
+
+    // Feedback visual no botão de adicionar
+    const textoOriginal = botao.innerText;
+    const corOriginal = botao.style.background;
+    
+    botao.innerText = "Adicionado! ✅";
+    botao.style.background = "#10b981"; // Verde sucesso
+    botao.disabled = true;
+    
+    setTimeout(() => {
+        botao.innerText = textoOriginal;
+        botao.style.background = corOriginal;
+        botao.disabled = false;
+    }, 1500);
+};
+
+// 3. FUNÇÃO AUXILIAR PARA LIMPAR RADIOS (Caso use o botão limpar)
+window.limparRadios = function(botao) {
+    const card = botao.closest('.card');
+    card.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+};
+
 // --- INTERFACE E POPUPS ---
 
 function mostrarPopup(nome) {
