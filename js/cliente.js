@@ -507,7 +507,7 @@ window.enviarPedidoZap = function() {
             if(item.extras && item.extras.length > 0) {
                 texto += `   _Op\u00E7\u00F5es: ${item.extras.join(', ')}_\n`;
             }
-            texto += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
+            texto += `   Preço: R$ ${subtotal.toFixed(2)}\n\n`;
         });
         
         texto += `----------------------------------\n`;
