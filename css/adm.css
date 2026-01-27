@@ -79,8 +79,16 @@ body {
     border-top: 8px solid var(--primary); /* Destaque no topo */
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
-    flex-direction: column;
-    
+    flex-direction: column;  
+}
+
+
+.txt-nome-cliente {
+    color: #8c6900;
+}
+
+.txt-nome-pedido {
+    color: #005ba1;
 }
 
 .order-card:hover {
