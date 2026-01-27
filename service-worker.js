@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salgados-delicia-v6';
+const CACHE_NAME = 'salgados-delicia-v7';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
