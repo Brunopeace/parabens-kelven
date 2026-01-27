@@ -1,8 +1,8 @@
 /* CONFIGURAÇÕES GERAIS */
 :root {
-    --primary: #D97706;
-    --primary-light: #FEF3C7;
-    --success: #10b981;
+    --primary: #D97706; /* laranja padrão */
+    --primary-light: #FEF3C7; /* cor de creme */
+    --success: #10b981; /* verde claro */
     --success-light: #D1FAE5;
     --danger: #ef4444;
     --danger-light: #FEE2E2;
@@ -84,11 +84,11 @@ body {
 
 
 .txt-nome-cliente {
-    color: #8c6900;
+    color: #10b981;
 }
 
 .txt-nome-pedido {
-    color: #005ba1;
+    color: #D97706;
 }
 
 .order-card:hover {
