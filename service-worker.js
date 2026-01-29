@@ -2,9 +2,12 @@ const CACHE_NAME = 'salgados-delicia-cliente-v1';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
-    './css/styles.css', // Verifique se o nome do seu CSS está correto
-    './js/script.js',   // Verifique se o nome do seu JS está correto
+    './css/cliente.css', // Verifique se o nome do seu CSS está correto
+    './css/adm.css',
+    './firebase-messaging/firebase-messaging-sw.js',
+    './js/cliente.js',   // Verifique se o nome do seu JS está correto
     './img/icone-512.png',
+    './img/icone-192.png',
     './img/logo.png'
 ];
 
