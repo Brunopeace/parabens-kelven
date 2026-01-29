@@ -4,7 +4,7 @@ const ASSETS_TO_CACHE = [
     './index.html',
     './css/cliente.css', // Verifique se o nome do seu CSS está correto
     './css/adm.css',
-    './firebase-messaging/firebase-messaging-sw.js',
+    './firebase-messaging-sw.js',
     './js/cliente.js',   // Verifique se o nome do seu JS está correto
     './img/icone-512.png',
     './img/icone-192.png',
