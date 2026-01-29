@@ -1,10 +1,9 @@
-// 1. IMPORTAÇÃO DO FIREBASE (Versão compatível com Service Worker)
+// 1. IMPORTAÇÃO DO FIREBASE
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js');
 
-const CACHE_NAME = 'salgados-delicia-v13';
+const CACHE_NAME = 'salgados-delicia-v5';
 
-// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
     authDomain: "salgadosdelicia-b0032.firebaseapp.com",
@@ -18,42 +17,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- LÓGICA DE CACHE (Seu código original mantido) ---
+// --- LÓGICA DE CACHE ---
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  const urlsToCache = [
-      './',
-      './index.html',
-      './css/cliente.css',
-      './css/adm.css',
-      './img/icone-512.png',
-      './img/icone-192.png'
-  ];
-  event.waitUntil(
-      caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
+  const urlsToCache = ['./', './index.html', './css/cliente.css', './css/adm.css', './img/icone-512.png'];
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
       caches.keys().then((cacheNames) => {
-          return Promise.all(
-              cacheNames.map((cache) => {
-                  if (cache !== CACHE_NAME) return caches.delete(cache);
-              })
-          );
+          return Promise.all(cacheNames.map((cache) => {
+              if (cache !== CACHE_NAME) return caches.delete(cache);
+          }));
       })
   );
   clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-      caches.match(event.request).then((response) => response || fetch(event.request))
-  );
+  event.respondWith(caches.match(event.request).then((response) => response || fetch(event.request)));
 });
 
-// --- LÓGICA DE NOTIFICAÇÃO EM SEGUNDO PLANO ---
+// --- LÓGICA DE NOTIFICAÇÃO ---
 let totalPedidosAntigo = -1;
 
 db.ref('pedidos').on('value', (snapshot) => {
@@ -61,35 +47,33 @@ db.ref('pedidos').on('value', (snapshot) => {
     const ids = pedidos ? Object.keys(pedidos) : [];
     const totalAtual = ids.length;
 
-    // Só dispara se o número de pedidos aumentar e não for a carga inicial
     if (totalPedidosAntigo !== -1 && totalAtual > totalPedidosAntigo) {
         const ultimoId = ids[ids.length - 1];
         const novoPedido = pedidos[ultimoId];
         
+        // Criamos uma tag baseada no nome do cliente para agrupar apenas os pedidos DELE
+        const clienteTag = novoPedido.cliente ? novoPedido.cliente.toLowerCase().trim() : 'geral';
+
         self.registration.showNotification('🥟 Novo Pedido Chegou!', {
             body: `Cliente: ${novoPedido.cliente || 'Salgados'} - Total: R$ ${novoPedido.total?.toFixed(2)}`,
             icon: './img/icone-512.png',
             badge: './img/icone-512.png',
-            vibrate: [200, 100, 200],
-            tag: 'novo-pedido', // Evita notificações duplicadas
+            // Removido o array de vibração para usar apenas o som padrão do sistema
+            tag: clienteTag, 
+            renotify: true, // Faz soar o alerta mesmo se o cliente já tiver uma notificação aberta
             data: { url: './paineladm.html' }
         });
     }
     totalPedidosAntigo = totalAtual;
 });
 
-// Ao clicar na notificação, abre o Painel ADM
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-            // Se o painel já estiver aberto em alguma aba, foca nela
             for (const client of clientList) {
-                if (client.url.includes('paineladm.html') && 'focus' in client) {
-                    return client.focus();
-                }
+                if (client.url.includes('paineladm.html') && 'focus' in client) return client.focus();
             }
-            // Se não, abre uma nova janela
             if (clients.openWindow) return clients.openWindow('./paineladm.html');
         })
     );
