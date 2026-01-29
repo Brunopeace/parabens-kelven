@@ -2,7 +2,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       // Definimos o registro apontando para o arquivo correto
       // E adicionamos o escopo './' para ele entender que é apenas nesta pasta
-      navigator.serviceWorker.register('./sw.js', { scope: './' })
+      navigator.serviceWorker.register('./service-worker.js', { scope: './' })
       .then(function(registration) {
         console.log('✅ Service Worker do Salgados registrado com sucesso no escopo:', registration.scope);
       })
@@ -55,6 +55,7 @@ window.addEventListener('appinstalled', () => {
     if (btn) btn.remove(); // Remove o botão caso ainda esteja lá
 });
 
+import { getMessaging } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -99,7 +100,7 @@ function verificarHorario() {
     
     // 2. Regra de Horário (17:00 às 23:00)
     // 1700 é 17:00 | 2300 é 23:00
-    const horarioPermitido = horarioAtualNumerico >= 700 && horarioAtualNumerico < 2400; 
+    const horarioPermitido = horarioAtualNumerico >= 700 && horarioAtualNumerico < 1800; 
     
     // 3. Estado de Abertura (Status do Firebase + Relógio)
     const estaAberto = horarioPermitido && !bloqueioManualOnline;
@@ -443,6 +444,42 @@ window.ignorarSugestao = function() {
     window.enviarPedidoZap();
 };
 
+// nova função 
+async function dispararNotificacaoParaAdm(nomeCliente, total) {
+    try {
+        // 1. Procuramos os Tokens dos ADMs que guardamos no banco
+        const tokensSnapshot = await get(ref(db, 'tokens_adm'));
+        const tokensData = tokensSnapshot.val();
+
+        if (!tokensData) return;
+
+        // 2. Para cada token (cada telemóvel/PC do ADM logado), enviamos o push
+        Object.values(tokensData).forEach(item => {
+            const tokenDestino = item.token;
+
+            // Envia para a API do Google FCM
+            fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // A "Authorization" aqui exigiria uma chave de servidor, 
+                    // mas como estamos em testes, o Firebase envia via Messaging interno se estiver logado.
+                },
+                body: JSON.stringify({
+                    to: tokenDestino,
+                    notification: {
+                        title: "🥟 NOVO PEDIDO CHEGOU!",
+                        body: `Cliente: ${nomeCliente} - Valor: R$ ${total.toFixed(2)}`,
+                        click_action: "https://teusite.com/paineladm.html"
+                    }
+                })
+            });
+        });
+    } catch (e) {
+        console.log("Erro ao tentar avisar ADM via Push:", e);
+    }
+}
+
 // --- FUNÇÃO PRINCIPAL DE ENVIO ---
 
 window.enviarPedidoZap = function() {
@@ -493,6 +530,7 @@ window.enviarPedidoZap = function() {
         localStorage.setItem('pedidoAtivo', 'true');
         
         window.pulouSugestao = false;
+    dispararNotificacaoParaAdm(nomeCliente, totalCalculado);
 
         // Formatar mensagem WhatsApp
         let texto = `*NOVO PEDIDO #${pedidoId.slice(-4)}*\n`;
