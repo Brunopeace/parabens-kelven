@@ -47,7 +47,7 @@
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
@@ -71,18 +71,18 @@
     window.ativarNotificacoesPush = function() {
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
-                // Forçamos o registro manual apontando para o arquivo na pasta /SALGADOS/
+                // Registra o Service Worker (Certifique-se que o arquivo existe na raiz)
                 navigator.serviceWorker.register('./firebase-messaging-sw.js').then((registration) => {
-                    console.log("✅ Service Worker registrado para Push na pasta!");
+                    console.log("✅ Service Worker registrado!");
 
-                    // Pegamos o token informando ao Firebase qual é o registro correto
                     return getToken(messaging, { 
                         vapidKey: 'BPTear-W70lY11qDM7pm8o8P6iF-0oNWI6nrHoqaORpi8n5P2PqtYW3pHpSt3CZmhZfHRFVmjL-FR4D6EfiYWoQ',
                         serviceWorkerRegistration: registration 
                     });
                 }).then((currentToken) => {
                     if (currentToken) {
-                        set(ref(db, 'tokens_adm/' + currentToken.slice(0, 15)), {
+                        // Salva o token no banco para a Cloud Function usar
+                        set(ref(db, 'tokens_adm/' + btoa(currentToken).substring(0, 15)), {
                             token: currentToken,
                             ultimaAtualizacao: new Date().toLocaleString(),
                             dispositivo: navigator.platform
@@ -92,13 +92,23 @@
                     }
                 }).catch((err) => {
                     console.error('Erro ao obter token:', err);
-                    alert("Erro ao ativar Push. Veja o console.");
+                    alert("Erro ao ativar Push. Verifique o console.");
                 });
             } else {
                 alert("Você precisa permitir as notificações no navegador.");
             }
         });
     };
+
+    // Ouvir mensagens com o painel aberto (Foreground)
+    onMessage(messaging, (payload) => {
+        console.log("Mensagem recebida:", payload);
+        new Notification(payload.notification.title, {
+            body: payload.notification.body,
+            icon: "img/icone-512.png"
+        });
+        somNovoPedido.play().catch(() => {});
+    });
 
     // --- ESCUTA O STATUS DA LOJA ---
     onValue(statusRef, (snapshot) => {
@@ -116,13 +126,13 @@
         if (isBloqueada) {
             btn.className = "btn-emergency closed-now";
             if (textoBtn) textoBtn.innerText = "Reabrir Loja agora";
-            tituloStatus.innerHTML = 'Status: <span style="color: #dc2626; font-weight: 800;">LOJA FECHADA</span>';
-            descStatus.innerHTML = "<strong>Atenção:</strong> A loja está pausada.";
+            if (tituloStatus) tituloStatus.innerHTML = 'Status: <span style="color: #dc2626; font-weight: 800;">LOJA FECHADA</span>';
+            if (descStatus) descStatus.innerHTML = "<strong>Atenção:</strong> A loja está pausada.";
         } else {
             btn.className = "btn-emergency open-now";
             if (textoBtn) textoBtn.innerText = "Fechar Loja (Imprevisto)";
-            tituloStatus.innerHTML = 'Status: <span style="color: #10b981; font-weight: 800;">LOJA ABERTA</span>';
-            descStatus.innerHTML = "<strong>Horário:</strong> Aberta (Até 23:00)";
+            if (tituloStatus) tituloStatus.innerHTML = 'Status: <span style="color: #10b981; font-weight: 800;">LOJA ABERTA</span>';
+            if (descStatus) descStatus.innerHTML = "<strong>Horário:</strong> Aberta (Até 23:00)";
         }
     };
 
@@ -138,11 +148,9 @@
         const pedidos = snapshot.val();
         if (!container) return;
 
+        // Se houver novos pedidos após a carga inicial, toca o som
         if (!primeiraCarga && pedidos) {
-            somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
-            if (Notification.permission === "granted") {
-                new Notification("🍕 Novo Pedido!", { body: "Confira no painel.", icon: "img/icone-512.png" });
-            }
+            somNovoPedido.play().catch(() => console.log("Áudio bloqueado pelo navegador"));
         }
         primeiraCarga = false;
         container.innerHTML = ""; 
@@ -191,7 +199,8 @@
         let msg = tipo === 'preparo' ? `Pedido de ${nome} em preparo!` : `Pedido de ${nome} saiu para entrega!`;
         window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
     };
-    </script>
+</script>
+
 
     <script>
     // Registro do SW para o Painel usar cache e monitoramento de banco
