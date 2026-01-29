@@ -1,0 +1,15 @@
+{
+  "name": "Painel Salgados Delícia",
+  "short_name": "Adm Salgados",
+  "start_url": "paineladm.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#D97706",
+  "icons": [
+    {
+      "src": "img/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
