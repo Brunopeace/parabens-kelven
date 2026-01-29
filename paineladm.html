@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/adm.css">
     <link rel="apple-touch-icon" href="img/icone-512.png">
+    <link rel="manifest" href="manifest-adm.json">
+    
 
 </head>
 <body>
@@ -179,6 +181,44 @@
             : `*ESTÁ A CAMINHO!* 🛵💨\nO entregador saiu com seus salgados quentinhos, ${nome}! 😍\n${nomeLoja}`;
         window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
     };
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        // CORREÇÃO: Nome exato do seu arquivo e removido o scope fixo para evitar conflito na raiz
+        navigator.serviceWorker.register('service-worker.js')
+        .then(function(registration) {
+            console.log('✅ Painel ADM registrado com sucesso!');
+        })
+        .catch(function(err) {
+            console.log('❌ Erro: Verifique se o arquivo service-worker.js está na mesma pasta.', err);
+        });
+    });
+}
+
+/* Botão de Instalar Painel */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    if (!document.querySelector('.btn-install-adm')) {
+        const btnInstall = document.createElement('button');
+        btnInstall.className = 'btn-install-adm';
+        btnInstall.innerHTML = '<i class="fas fa-tools"></i> Instalar Painel';
+        btnInstall.style = "position:fixed; bottom:20px; left:20px; z-index:1000; background:#1f2937; color:white; border:none; padding:12px 20px; border-radius:30px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);";
+        document.body.appendChild(btnInstall);
+
+        btnInstall.addEventListener('click', () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') btnInstall.remove();
+                deferredPrompt = null;
+            });
+        });
+    }
+});
 </script>
 
 </body>
