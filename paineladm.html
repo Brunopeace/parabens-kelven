@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="css/adm.css">
     <link rel="apple-touch-icon" href="img/icone-512.png">
     <link rel="manifest" href="manifest-adm.json">
-    
-
 </head>
 <body>
     <div class="admin-container">
@@ -19,7 +17,12 @@
                 <h1>Gerenciador de Pedidos</h1>
                 <p style="color: #6B7280;">Acompanhe e atualize os pedidos em tempo real</p>
             </div>
-            <span class="badge" id="painel-status">Conectado</span>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-push" onclick="ativarNotificacoesPush()" style="background: #4f46e5; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">
+                    <i class="fas fa-bell"></i> Ativar Push
+                </button>
+                <span class="badge" id="painel-status">Conectado</span>
+            </div>
         </div>
 
         <div class="admin-controls">
@@ -41,11 +44,10 @@
         </div>
     </div>
     
-    
     <script type="module">
-    // 1. IMPORTAÇÕES COMPLETAS
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
@@ -59,11 +61,35 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const messaging = getMessaging(app);
     
-    // Referências e Elementos
     const statusRef = ref(db, 'configuracoes/lojaBloqueada');
     const container = document.getElementById('lista-pedidos-container'); 
     let lojaEstaBloqueada = false;
+
+    // --- FUNÇÃO PARA ATIVAR NOTIFICAÇÕES PUSH (FCM) ---
+    window.ativarNotificacoesPush = function() {
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                getToken(messaging, { 
+                    vapidKey: 'BPTear-W70lY11qDM7pm8o8P6iF-0oNWI6nrHoqaORpi8n5P2PqtYW3pHpSt3CZmhZfHRFVmjL-FR4D6EfiYWoQ' 
+                }).then((currentToken) => {
+                    if (currentToken) {
+                        // Salva o Token no Banco para o Servidor saber para quem enviar
+                        set(ref(db, 'tokens_adm/' + currentToken.slice(0, 15)), {
+                            token: currentToken,
+                            ultimaAtualizacao: new Date().toLocaleString(),
+                            dispositivo: navigator.platform
+                        });
+                        alert("✅ Notificações Push ativadas com sucesso!");
+                        console.log("Token FCM:", currentToken);
+                    }
+                }).catch((err) => console.log('Erro ao obter token:', err));
+            } else {
+                alert("Você precisa permitir as notificações no navegador.");
+            }
+        });
+    };
 
     // --- ESCUTA O STATUS DA LOJA ---
     onValue(statusRef, (snapshot) => {
@@ -82,14 +108,12 @@
             btn.className = "btn-emergency closed-now";
             if (textoBtn) textoBtn.innerText = "Reabrir Loja agora";
             tituloStatus.innerHTML = 'Status: <span style="color: #dc2626; font-weight: 800;">LOJA FECHADA</span>';
-            descStatus.innerHTML = "<strong>Atenção:</strong> A loja está pausada para todos os clientes.";
-            btn.parentElement.style.borderLeft = "6px solid #dc2626";
+            descStatus.innerHTML = "<strong>Atenção:</strong> A loja está pausada.";
         } else {
             btn.className = "btn-emergency open-now";
             if (textoBtn) textoBtn.innerText = "Fechar Loja (Imprevisto)";
             tituloStatus.innerHTML = 'Status: <span style="color: #10b981; font-weight: 800;">LOJA ABERTA</span>';
-            descStatus.innerHTML = "<strong>Horário:</strong> Aberta (Fecha automático 23:00)";
-            btn.parentElement.style.borderLeft = "6px solid #10b981";
+            descStatus.innerHTML = "<strong>Horário:</strong> Aberta (Até 23:00)";
         }
     };
 
@@ -97,83 +121,45 @@
         set(statusRef, !lojaEstaBloqueada);
     };
 
-        // --- VARIÁVEIS DE CONTROLE (Coloque estas logo acima do onValue) ---
     let primeiraCarga = true;
     const somNovoPedido = new Audio('https://www.myinstants.com/media/sounds/ding-sound-effect_1.mp3');
 
-    // Solicitar permissão de notificação logo ao abrir o painel
-    if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-    }
-
-    // --- ESCUTAR PEDIDOS EM TEMPO REAL ---
+    // --- ESCUTAR PEDIDOS ---
     onValue(ref(db, 'pedidos'), (snapshot) => {
         const pedidos = snapshot.val();
         if (!container) return;
 
-        // --- LÓGICA DE NOTIFICAÇÃO ---
         if (!primeiraCarga && pedidos) {
-            // 1. Tocar Som
-            somNovoPedido.play().catch(e => console.log("Som aguardando interação do usuário."));
-
-            // 2. Notificação Visual (Banner)
+            somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
             if (Notification.permission === "granted") {
-                new Notification("🍕 Novo Pedido!", {
-                    body: "Um novo pedido acabou de chegar no painel.",
-                    icon: "img/icone-512.png"
-                });
+                new Notification("🍕 Novo Pedido!", { body: "Confira no painel.", icon: "img/icone-512.png" });
             }
         }
-        primeiraCarga = false; // Desativa após carregar os pedidos existentes
-
+        primeiraCarga = false;
         container.innerHTML = ""; 
 
         if (!pedidos) {
-            container.innerHTML = "<p style='text-align:center; padding:20px;'>Aguardando novos pedidos...</p>";
-            document.getElementById('painel-status').innerText = "Painel Ativo";
+            container.innerHTML = "<p style='text-align:center; padding:20px;'>Sem pedidos no momento.</p>";
             return;
         }
 
-        // Transformar em array e inverter para os novos aparecerem primeiro
-        const idsOrdenados = Object.keys(pedidos).reverse();
-
-        idsOrdenados.forEach(id => {
+        Object.keys(pedidos).reverse().forEach(id => {
             const p = pedidos[id];
             const itensSeguros = p.itens || []; 
-            
-            // Gerar lista de itens com Quantidade e Extras
-            const listaItens = itensSeguros.map(item => {
-                const extrasSeguros = item.extras || [];
-                const qtd = item.quantidade || 1;
-                           
-                return `
-                    <li style="margin-bottom: 5px; list-style: none;">
-                        <strong style="color: #D97706; margin-right: 10px;">(x${qtd})</strong> ${item.nome}
-                        ${extrasSeguros.length > 0 ? `<br><small style="color: #6B7280; margin-left: 20px;">↳ ${extrasSeguros.join(', ')}</small>` : ''}
-                    </li>`;
-            }).join('');
+            const listaItens = itensSeguros.map(item => `
+                <li style="list-style: none;">
+                    <strong>(x${item.quantidade || 1})</strong> ${item.nome}
+                    ${item.extras ? `<br><small style="color: #6B7280; margin-left: 15px;">↳ ${item.extras.join(', ')}</small>` : ''}
+                </li>`).join('');
 
             const card = document.createElement('div');
             card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
-            
-            // Montei o card corrigindo as tags <small> (estava <amall>)
             card.innerHTML = `
                 <div class="pedido-info">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3>
-                            <strong class="txt-nome-pedido" style="margin-right:11px;">Pedido:</strong> #${id.slice(-4)} 
-                            <small class="txt-nome-cliente">Cliente</small> - 
-                            <small>${(p.cliente || 'Sem Nome').toUpperCase()}</small>
-                        </h3>
-                        <small style="color: green; font-weight: bold;">${p.data || ''}</small>
-                    </div>
-                    <p style="margin-top: 5px;"><strong>📞 Tel:</strong> ${p.telefone}</p>
-                    <ul class="lista-itens-detalhe" style="padding: 0; margin: 15px 0;">
-                        ${listaItens}
-                    </ul>
-                    <p class="total-pedido" style="font-weight: 800; font-size: 1.1rem; border-top: 1px solid #eee; padding-top: 10px; text-align: right;">
-                        Total: R$ ${(p.total || 0).toFixed(2)}
-                    </p>
+                    <h3>#${id.slice(-4)} - ${p.cliente}</h3>
+                    <p><strong>📞 Tel:</strong> ${p.telefone}</p>
+                    <ul style="margin: 10px 0;">${listaItens}</ul>
+                    <p style="text-align: right; font-weight: bold;">Total: R$ ${(p.total || 0).toFixed(2)}</p>
                 </div>
                 <div class="status-group">
                     <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
@@ -181,79 +167,27 @@
                     <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
                 </div>
                 <div class="whatsapp-tools">
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">
-                        <i class="fab fa-whatsapp"></i> Preparando
-                    </button>
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">
-                        <i class="fab fa-whatsapp"></i> Saiu para Entrega
-                    </button>
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">WhatsApp Preparo</button>
+                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">WhatsApp Saiu</button>
                 </div>`;
             container.appendChild(card);
         });
     });
 
-    // Funções Globais expostas para os botões
-    window.mudarStatus = (id, novoStatus) => {
-        update(ref(db, `pedidos/${id}`), { status: novoStatus });
+    window.mudarStatus = (id, novoStatus) => update(ref(db, `pedidos/${id}`), { status: novoStatus });
+    window.excluirPedido = (id) => confirm("Excluir pedido?") && remove(ref(db, `pedidos/${id}`));
+    window.avisarWA = (tel, nome, tipo) => {
+        let num = tel.replace(/\D/g, '');
+        if (num.length <= 11) num = "55" + num;
+        let msg = tipo === 'preparo' ? `Pedido de ${nome} em preparo!` : `Pedido de ${nome} saiu para entrega!`;
+        window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
     };
+    </script>
 
-    window.excluirPedido = (id) => {
-        if (confirm("Deseja remover este pedido do painel?")) {
-            remove(ref(db, `pedidos/${id}`));
-        }
-    };
-
-    window.avisarWA = (telefone, nome, tipo) => {
-        let numeroLimpo = telefone.replace(/\D/g, '');
-        if (numeroLimpo.length <= 11) numeroLimpo = "55" + numeroLimpo;
-        const nomeLoja = "*Salgados Delícia* 🥟";
-        let msg = (tipo === 'preparo') 
-            ? `*BOAS NOTÍCIAS, ${nome.toUpperCase()}!* 🎉\nSeu pedido começou a ser preparado! 🔥\n${nomeLoja}`
-            : `*ESTÁ A CAMINHO!* 🛵💨\nO entregador saiu com seus salgados quentinhos, ${nome}! 😍\n${nomeLoja}`;
-        window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(msg)}`, '_blank');
-    };
-</script>
-
-<script>
-// No seu script de registro do service worker:
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
-        console.log('✅ Service Worker Ativo');
-        
-        // Sincroniza o estado inicial para evitar notificações de pedidos antigos
-        // ao abrir o painel pela primeira vez
-    });
-}
-
-// Solicitar permissão explicitamente
-if (Notification.permission !== 'granted') {
-    Notification.requestPermission();
-}
-
-
-/* Botão de Instalar Painel */
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    if (!document.querySelector('.btn-install-adm')) {
-        const btnInstall = document.createElement('button');
-        btnInstall.className = 'btn-install-adm';
-        btnInstall.innerHTML = '<i class="fas fa-tools"></i> Instalar Painel';
-        btnInstall.style = "position:fixed; bottom:20px; left:20px; z-index:1000; background:#1f2937; color:white; border:none; padding:12px 20px; border-radius:30px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);";
-        document.body.appendChild(btnInstall);
-
-        btnInstall.addEventListener('click', () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if (choice.outcome === 'accepted') btnInstall.remove();
-                deferredPrompt = null;
-            });
-        });
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').then(reg => console.log('SW ✅'));
     }
-});
-</script>
-
+    </script>
 </body>
 </html>
