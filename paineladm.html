@@ -97,10 +97,35 @@
         set(statusRef, !lojaEstaBloqueada);
     };
 
+        // --- VARIÁVEIS DE CONTROLE (Coloque estas logo acima do onValue) ---
+    let primeiraCarga = true;
+    const somNovoPedido = new Audio('https://www.myinstants.com/media/sounds/ding-sound-effect_1.mp3');
+
+    // Solicitar permissão de notificação logo ao abrir o painel
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
     // --- ESCUTAR PEDIDOS EM TEMPO REAL ---
     onValue(ref(db, 'pedidos'), (snapshot) => {
         const pedidos = snapshot.val();
         if (!container) return;
+
+        // --- LÓGICA DE NOTIFICAÇÃO ---
+        if (!primeiraCarga && pedidos) {
+            // 1. Tocar Som
+            somNovoPedido.play().catch(e => console.log("Som aguardando interação do usuário."));
+
+            // 2. Notificação Visual (Banner)
+            if (Notification.permission === "granted") {
+                new Notification("🍕 Novo Pedido!", {
+                    body: "Um novo pedido acabou de chegar no painel.",
+                    icon: "img/icone-512.png"
+                });
+            }
+        }
+        primeiraCarga = false; // Desativa após carregar os pedidos existentes
+
         container.innerHTML = ""; 
 
         if (!pedidos) {
@@ -116,7 +141,7 @@
             const p = pedidos[id];
             const itensSeguros = p.itens || []; 
             
-            // ALTERAÇÃO: Agora inclui a quantidade (xQtd) no texto do item
+            // Gerar lista de itens com Quantidade e Extras
             const listaItens = itensSeguros.map(item => {
                 const extrasSeguros = item.extras || [];
                 const qtd = item.quantidade || 1;
@@ -130,17 +155,23 @@
 
             const card = document.createElement('div');
             card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
+            
+            // Montei o card corrigindo as tags <small> (estava <amall>)
             card.innerHTML = `
                 <div class="pedido-info">
-                    <div style="display: flex; justify-content: space-between;">
-                        <h3><strong class="txt-nome-pedido" style=" margin-right:11px;">Pedido:</strong> #${id.slice(-4)} <amall class="txt-nome-cliente">Cliente</amall> - <amall>${(p.cliente || 'Sem Nome').toUpperCase()}</amall></h3>
-                        <small style=" color: green; margin-top: 5px;">${p.data || ''}</small>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>
+                            <strong class="txt-nome-pedido" style="margin-right:11px;">Pedido:</strong> #${id.slice(-4)} 
+                            <small class="txt-nome-cliente">Cliente</small> - 
+                            <small>${(p.cliente || 'Sem Nome').toUpperCase()}</small>
+                        </h3>
+                        <small style="color: green; font-weight: bold;">${p.data || ''}</small>
                     </div>
-                    <p><strong>📞 Tel:</strong> ${p.telefone}</p>
-                    <ul class="lista-itens-detalhe" style="padding: 0; margin: 10px 0;">
+                    <p style="margin-top: 5px;"><strong>📞 Tel:</strong> ${p.telefone}</p>
+                    <ul class="lista-itens-detalhe" style="padding: 0; margin: 15px 0;">
                         ${listaItens}
                     </ul>
-                    <p class="total-pedido" style="font-weight: 800; font-size: 1.1rem; border-top: 1px solid #eee; pt: 5px;">
+                    <p class="total-pedido" style="font-weight: 800; font-size: 1.1rem; border-top: 1px solid #eee; padding-top: 10px; text-align: right;">
                         Total: R$ ${(p.total || 0).toFixed(2)}
                     </p>
                 </div>
