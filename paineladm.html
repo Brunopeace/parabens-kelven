@@ -215,18 +215,21 @@
 </script>
 
 <script>
+// No seu script de registro do service worker:
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        // CORREÇÃO: Nome exato do seu arquivo e removido o scope fixo para evitar conflito na raiz
-        navigator.serviceWorker.register('service-worker.js')
-        .then(function(registration) {
-            console.log('✅ Painel ADM registrado com sucesso!');
-        })
-        .catch(function(err) {
-            console.log('❌ Erro: Verifique se o arquivo service-worker.js está na mesma pasta.', err);
-        });
+    navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+        console.log('✅ Service Worker Ativo');
+        
+        // Sincroniza o estado inicial para evitar notificações de pedidos antigos
+        // ao abrir o painel pela primeira vez
     });
 }
+
+// Solicitar permissão explicitamente
+if (Notification.permission !== 'granted') {
+    Notification.requestPermission();
+}
+
 
 /* Botão de Instalar Painel */
 let deferredPrompt;
