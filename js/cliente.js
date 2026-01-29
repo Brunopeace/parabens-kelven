@@ -2,7 +2,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       // Definimos o registro apontando para o arquivo correto
       // E adicionamos o escopo './' para ele entender que é apenas nesta pasta
-      navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' })
+      navigator.serviceWorker.register('firebase-messaging-sw.js', { scope: './' })
       .then(function(registration) {
         console.log('✅ Service Worker do Salgados registrado com sucesso no escopo:', registration.scope);
       })
@@ -55,7 +55,6 @@ window.addEventListener('appinstalled', () => {
     if (btn) btn.remove(); // Remove o botão caso ainda esteja lá
 });
 
-import { getMessaging } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -444,44 +443,7 @@ window.ignorarSugestao = function() {
     window.enviarPedidoZap();
 };
 
-// nova função 
-async function dispararNotificacaoParaAdm(nomeCliente, total) {
-    try {
-        // 1. Procuramos os Tokens dos ADMs que guardamos no banco
-        const tokensSnapshot = await get(ref(db, 'tokens_adm'));
-        const tokensData = tokensSnapshot.val();
-
-        if (!tokensData) return;
-
-        // 2. Para cada token (cada telemóvel/PC do ADM logado), enviamos o push
-        Object.values(tokensData).forEach(item => {
-            const tokenDestino = item.token;
-
-            // Envia para a API do Google FCM
-            fetch('https://fcm.googleapis.com/fcm/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // A "Authorization" aqui exigiria uma chave de servidor, 
-                    // mas como estamos em testes, o Firebase envia via Messaging interno se estiver logado.
-                },
-                body: JSON.stringify({
-                    to: tokenDestino,
-                    notification: {
-                        title: "🥟 NOVO PEDIDO CHEGOU!",
-                        body: `Cliente: ${nomeCliente} - Valor: R$ ${total.toFixed(2)}`,
-                        click_action: "https://teusite.com/paineladm.html"
-                    }
-                })
-            });
-        });
-    } catch (e) {
-        console.log("Erro ao tentar avisar ADM via Push:", e);
-    }
-}
-
 // --- FUNÇÃO PRINCIPAL DE ENVIO ---
-
 window.enviarPedidoZap = function() {
     const nomeCliente = document.getElementById('cliente-nome').value.trim();
     const telCliente = document.getElementById('cliente-tel').value.trim();
@@ -496,20 +458,19 @@ window.enviarPedidoZap = function() {
         return;
     }
 
-    // 2. LÓGICA DE SUGESTÃO (CROSS-SELL)
+    // 2. Lógica de Sugestão (Cross-sell)
     if (!temBebida() && !window.pulouSugestao) {
         document.getElementById('modal-sugestao').classList.add('active');
         return; 
     }
 
-    // 3. SE CHEGOU AQUI, PROCESSA O ENVIO FINAL
-    // CORREÇÃO: Calcula o total multiplicando PREÇO x QUANTIDADE de cada item
+    // 3. Cálculo do Total
     const totalCalculado = carrinho.reduce((acc, item) => {
         const qtd = item.quantidade || 1;
         return acc + (item.preco * qtd);
     }, 0);
 
-    // Objeto para o Firebase (Enviando o total correto)
+    // 4. Objeto para o Firebase
     const pedidoData = {
         cliente: nomeCliente,
         telefone: telCliente,
@@ -519,7 +480,7 @@ window.enviarPedidoZap = function() {
         data: new Date().toLocaleString()
     };
 
-    // Salvar no Firebase
+    // 5. Salvar no Firebase
     const listaRef = ref(db, 'pedidos');
     const novoPedidoRef = push(listaRef);
     const pedidoId = novoPedidoRef.key;
@@ -530,9 +491,13 @@ window.enviarPedidoZap = function() {
         localStorage.setItem('pedidoAtivo', 'true');
         
         window.pulouSugestao = false;
-    dispararNotificacaoParaAdm(nomeCliente, totalCalculado);
 
-        // Formatar mensagem WhatsApp
+        /* NOTA: Não chamamos mais a função avisarAdministradoresPush aqui.
+           O Firebase Cloud Functions (que instalamos via terminal) enviará
+           a notificação automaticamente ao detectar este novo registro.
+        */
+
+        // 6. Formatar mensagem WhatsApp
         let texto = `*NOVO PEDIDO #${pedidoId.slice(-4)}*\n`;
         texto += `\uD83D\uDC64 *Cliente:* ${nomeCliente}\n`;
         texto += `----------------------------------\n\n`;
@@ -543,7 +508,7 @@ window.enviarPedidoZap = function() {
             
             texto += `\u2705 *(${qtd}x) ${item.nome}*\n`;
             if(item.extras && item.extras.length > 0) {
-                texto += `   _Op\u00E7\u00F5es: ${item.extras.join(', ')}_\n`;
+                texto += `   _Opções: ${item.extras.join(', ')}_\n`;
             }
             texto += `   Preço: R$ ${subtotal.toFixed(2)}\n\n`;
         });
@@ -551,22 +516,21 @@ window.enviarPedidoZap = function() {
         texto += `----------------------------------\n`;
         texto += `*TOTAL: R$ ${totalCalculado.toFixed(2)}*\n`;
         texto += `*PAGAMENTO:* Pix\n\n`;
-        texto += `_Rastreie seu pedido clicando no bot\u00E3o 'Acompanhar Pedido' no site!_`;
+        texto += `_Rastreie seu pedido clicando no botão 'Acompanhar Pedido' no site!_`;
         
-        exibirBotaoTrack();
+        if (typeof exibirBotaoTrack === "function") exibirBotaoTrack();
         
         const foneVendedor = "5581982258462";
         window.open(`https://wa.me/${foneVendedor}?text=${encodeURIComponent(texto)}`, '_blank');
         
-        // Limpar interface
+        // 7. Limpar interface e carrinho
         carrinho = [];
-        // Limpa também o localStorage do carrinho
         localStorage.removeItem('carrinho');
         
-        atualizarInterface();
-        if(document.getElementById('modal-cart')) document.getElementById('modal-cart').classList.remove('active');
+        if (typeof atualizarInterface === "function") atualizarInterface();
+        if (document.getElementById('modal-cart')) document.getElementById('modal-cart').classList.remove('active');
         
-        monitorarMeuPedido();
+        if (typeof monitorarMeuPedido === "function") monitorarMeuPedido();
 
     }).catch(err => {
         alert("Erro ao enviar pedido: " + err.message);
