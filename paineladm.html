@@ -71,11 +71,17 @@
     window.ativarNotificacoesPush = function() {
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
-                getToken(messaging, { 
-                    vapidKey: 'BPTear-W70lY11qDM7pm8o8P6iF-0oNWI6nrHoqaORpi8n5P2PqtYW3pHpSt3CZmhZfHRFVmjL-FR4D6EfiYWoQ' 
+                // Forçamos o registro manual apontando para o arquivo na pasta /SALGADOS/
+                navigator.serviceWorker.register('./firebase-messaging-sw.js').then((registration) => {
+                    console.log("✅ Service Worker registrado para Push na pasta!");
+
+                    // Pegamos o token informando ao Firebase qual é o registro correto
+                    return getToken(messaging, { 
+                        vapidKey: 'BPTear-W70lY11qDM7pm8o8P6iF-0oNWI6nrHoqaORpi8n5P2PqtYW3pHpSt3CZmhZfHRFVmjL-FR4D6EfiYWoQ',
+                        serviceWorkerRegistration: registration 
+                    });
                 }).then((currentToken) => {
                     if (currentToken) {
-                        // Salva o Token no Banco para o Servidor saber para quem enviar
                         set(ref(db, 'tokens_adm/' + currentToken.slice(0, 15)), {
                             token: currentToken,
                             ultimaAtualizacao: new Date().toLocaleString(),
@@ -84,7 +90,10 @@
                         alert("✅ Notificações Push ativadas com sucesso!");
                         console.log("Token FCM:", currentToken);
                     }
-                }).catch((err) => console.log('Erro ao obter token:', err));
+                }).catch((err) => {
+                    console.error('Erro ao obter token:', err);
+                    alert("Erro ao ativar Push. Veja o console.");
+                });
             } else {
                 alert("Você precisa permitir as notificações no navegador.");
             }
@@ -185,8 +194,9 @@
     </script>
 
     <script>
+    // Registro do SW para o Painel usar cache e monitoramento de banco
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('firebase-messaging-sw.js').then(reg => console.log('SW ✅'));
+        navigator.serviceWorker.register('./firebase-messaging-sw.js').then(reg => console.log('SW ✅'));
     }
     </script>
 </body>
