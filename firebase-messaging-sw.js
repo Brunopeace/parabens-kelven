@@ -5,7 +5,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'salgados-delicia-v8';
+const CACHE_NAME = 'salgados-delicia-v22';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
