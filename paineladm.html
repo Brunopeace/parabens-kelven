@@ -72,7 +72,7 @@
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
                 // 2. Registra especificamente o SW do Firebase Messaging
-                navigator.serviceWorker.register("firebase-messaging/firebase-messaging-sw.js", { scope: '/' })
+                navigator.serviceWorker.register("firebase-messaging-sw.js")
 .then((registration) => {
     console.log("✅ SW Firebase registrado com escopo total!");
 
