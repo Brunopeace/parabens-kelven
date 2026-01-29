@@ -71,9 +71,10 @@
     window.ativarNotificacoesPush = function() {
         Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
-                // Registra o Service Worker (Certifique-se que o arquivo existe na raiz)
-                navigator.serviceWorker.register('./firebase-messaging-sw.js').then((registration) => {
-                    console.log("✅ Service Worker registrado!");
+                // 2. Registra especificamente o SW do Firebase Messaging
+                navigator.serviceWorker.register("firebase-messaging/firebase-messaging-sw.js", { scope: '/' })
+.then((registration) => {
+    console.log("✅ SW Firebase registrado com escopo total!");
 
                     return getToken(messaging, { 
                         vapidKey: 'BPTear-W70lY11qDM7pm8o8P6iF-0oNWI6nrHoqaORpi8n5P2PqtYW3pHpSt3CZmhZfHRFVmjL-FR4D6EfiYWoQ',
@@ -81,18 +82,17 @@
                     });
                 }).then((currentToken) => {
                     if (currentToken) {
-                        // Salva o token no banco para a Cloud Function usar
-                        set(ref(db, 'tokens_adm/' + btoa(currentToken).substring(0, 15)), {
+                        set(ref(db, 'tokens_adm/admin_principal'), {
                             token: currentToken,
                             ultimaAtualizacao: new Date().toLocaleString(),
                             dispositivo: navigator.platform
                         });
-                        alert("✅ Notificações Push ativadas com sucesso!");
+                        alert("✅ Notificações Push configuradas!");
                         console.log("Token FCM:", currentToken);
                     }
                 }).catch((err) => {
-                    console.error('Erro ao obter token:', err);
-                    alert("Erro ao ativar Push. Verifique o console.");
+                    console.error('Erro ao configurar Push:', err);
+                    alert("Erro ao ativar. Verifique se o arquivo firebase-messaging-sw.js existe.");
                 });
             } else {
                 alert("Você precisa permitir as notificações no navegador.");
@@ -100,14 +100,15 @@
         });
     };
 
-    // Ouvir mensagens com o painel aberto (Foreground)
+    // Foreground: Recebe quando o painel está aberto na tela
     onMessage(messaging, (payload) => {
-        console.log("Mensagem recebida:", payload);
+        console.log("Push recebido (Painel Aberto):", payload);
+        // Não criamos a notificação aqui porque o sistema de som já avisa no onValue
+        // Ou, se preferir a janelinha visual:
         new Notification(payload.notification.title, {
             body: payload.notification.body,
             icon: "img/icone-512.png"
         });
-        somNovoPedido.play().catch(() => {});
     });
 
     // --- ESCUTA O STATUS DA LOJA ---
@@ -148,9 +149,8 @@
         const pedidos = snapshot.val();
         if (!container) return;
 
-        // Se houver novos pedidos após a carga inicial, toca o som
         if (!primeiraCarga && pedidos) {
-            somNovoPedido.play().catch(() => console.log("Áudio bloqueado pelo navegador"));
+            somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
         }
         primeiraCarga = false;
         container.innerHTML = ""; 
@@ -201,12 +201,5 @@
     };
 </script>
 
-
-    <script>
-    // Registro do SW para o Painel usar cache e monitoramento de banco
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./firebase-messaging-sw.js').then(reg => console.log('SW ✅'));
-    }
-    </script>
 </body>
 </html>
