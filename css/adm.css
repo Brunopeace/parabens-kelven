@@ -307,7 +307,6 @@ body {
     min-width: 85px; /* Garante que os dois fiquem alinhados verticalmente */
 }
 
-
 .cliente-box .txt-tel {
     font-size: 1.1rem;
     color: #D97706 !important; /* Cor mais escura para o rótulo */
@@ -316,7 +315,6 @@ body {
     display: inline-block;
     min-width: 85px; /* Garante que os dois fiquem alinhados verticalmente */
 }
-
 
 /* Ajuste específico para o nome do cliente e número ficarem normais (não negrito) se desejar */
 .cliente-box span.dados {
