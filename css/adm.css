@@ -1,5 +1,14 @@
-/* CONFIGURAÇÕES GERAIS */
+/* ============================================================
+   DESIGN 5 ESTRELAS RESPONSIVO (NOTEBOOK & MOBILE)
+   ============================================================ */
+
 :root {
+    --bg-app: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --wa-green: linear-gradient(180deg, #00e667 0%, #00c853 100%);
+    
     --primary: #D97706; /* laranja padrão */
     --primary-light: #FEF3C7; /* cor de creme */
     --success: #10b981; /* verde claro */
@@ -11,7 +20,6 @@
     --bg: #f8fafc;
     --text-main: #1e293b;
     --text-soft: #64748b;
-    --white: #ffffff;
 }
 
 * {
@@ -22,268 +30,430 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: var(--bg);
-    color: var(--text-main);
-    line-height: 1.6;
+    background-color: var(--bg-app);
     padding: 20px;
+    color: var(--text-dark);
 }
 
-/* CONTAINER PRINCIPAL */
-.admin-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
+/* ============================================================
+   CABEÇALHO DO PAINEL (HEADER)
+   ============================================================ */
 
-/* CABEÇALHO */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--white);
-    padding: 20px 30px;
-    border-radius: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    padding: 24px 30px;
+    border-radius: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     margin-bottom: 30px;
+    border: 1px solid #f1f5f9;
 }
 
 .header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-main);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
 }
 
+.header p {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* BOTÃO ATIVAR PUSH */
+#btn-push {
+    background: #4f46e5 !important; /* Roxo moderno */
+    color: white !important;
+    font-weight: 700 !important;
+    padding: 12px 20px !important;
+    border-radius: 14px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+#btn-push:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+    filter: brightness(1.1);
+}
+
+#btn-push:active {
+    transform: scale(0.95);
+}
+
+/* STATUS CONECTADO (BADGE) */
 .badge {
-    background: var(--primary);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border: 1px solid #bbf7d0;
 }
 
-/* GRID DE PEDIDOS */
-#lista-pedidos-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
+/* RESPONSIVIDADE DO CABEÇALHO */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 20px;
+        border-radius: 0 0 30px 30px; /* Estilo App Bar no Mobile */
+        margin: -20px -15px 30px -15px; /* Cola no topo no mobile */
+    }
+
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .header div:last-child {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #btn-push {
+        flex: 1;
+        justify-content: center;
+    }
 }
 
-/* CARD DE PEDIDO INDIVIDUAL */
-.order-card {
-    background: var(--white);
-    border-radius: 20px;
+/* ============================================================
+   CONTROLES DE OPERAÇÃO (LOJA ABERTA/FECHADA)
+   ============================================================ */
+
+.admin-controls {
+    background: #ffffff;
     padding: 25px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
-    border-top: 8px solid var(--primary); /* Destaque no topo */
-    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 30px; /* Seguindo o arredondado dos cards */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
     display: flex;
-    flex-direction: column;  
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 35px;
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
 }
 
-
-.txt-nome-cliente {
-    color: #10b981;
-}
-
-.txt-nome-pedido {
-    color: #D97706;
-}
-
-.order-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06);
-}
-
-/* Quando o status for "Saiu para Entrega" */
-.order-card.finalizado {
-    border-top-color: var(--success);
-}
-
-/* Estilos rápidos para o Botão de Emergência no Painel */
-        .admin-controls {
-            background: #fff;
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #f3f4f6;
-        }
-
-        .status-info h3 { font-size: 1.1rem; color: #111827; margin-bottom: 4px; }
-        .status-info p { font-size: 0.85rem; color: #6b7280; }
-
-        .btn-emergency {
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        /* Estado: Loja Aberta (Botão para Fechar) */
-        .btn-emergency.open-now {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .btn-emergency.open-now:hover { background: #fecaca; }
-
-        /* Estado: Loja Fechada (Botão para Abrir) */
-        .btn-emergency.closed-now {
-            background: #dcfce7;
-            color: #15803d;
-        }
-        .btn-emergency.closed-now:hover { background: #bbf7d0; }
-
-        .pulse-red {
-            width: 10px;
-            height: 10px;
-            background: #dc2626;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse-red 2s infinite;
-        }
-
-        @keyframes pulse-red {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-        }
-
-/* INFORMAÇÕES DO CLIENTE */
-.pedido-info h3 {
+/* Título e descrição do status */
+.status-info h3 {
     font-size: 1.2rem;
-    margin-bottom: 10px;
-    color: var(--text-main);
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 10px;
-}
-
-.pedido-info p {
-    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1e293b;
     margin-bottom: 5px;
 }
 
-.lista-itens-detalhe {
-    list-style: none;
-    margin: 15px 0;
-    padding: 12px;
-    background: #fdfcfb;
-    border-radius: 12px;
-    border: 1px dashed #e2e8f0;
+.status-info p {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
-.lista-itens-detalhe li {
+/* BOTÃO DE EMERGÊNCIA (O POWER) */
+.btn-emergency {
+    border: none;
+    padding: 15px 25px;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
     font-size: 0.9rem;
-    color: var(--text-soft);
-    margin-bottom: 4px;
+    cursor: pointer;
     display: flex;
     align-items: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.lista-itens-detalhe li::before {
-    content: "•";
-    color: var(--primary);
-    font-weight: bold;
-    margin-right: 8px;
+/* ESTADO: LOJA ABERTA (Botão para Pausar - Vermelho) */
+.btn-emergency.open-now {
+    background: #fff1f2;
+    color: #e11d48;
 }
 
-.total-pedido {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-top: 10px;
+.btn-emergency.open-now i {
+    color: #fb7185;
 }
 
-/* GRUPOS DE BOTÕES */
-.status-group, .whatsapp-tools {
+.btn-emergency.open-now:hover {
+    background: #ffe4e6;
+    transform: translateY(-2px);
+}
+
+/* ESTADO: LOJA FECHADA (Botão para Reabrir - Verde) */
+.btn-emergency.closed-now {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.btn-emergency.closed-now i {
+    color: #10b981;
+}
+
+.btn-emergency.closed-now:hover {
+    background: #d1fae5;
+    transform: translateY(-2px);
+}
+
+/* Efeito de clique */
+.btn-emergency:active {
+    transform: scale(0.96);
+}
+
+/* RESPONSIVIDADE PARA CELULAR */
+@media (max-width: 768px) {
+    .admin-controls {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .btn-emergency {
+        width: 100%;
+        justify-content: center;
+        padding: 18px;
+    }
+}
+
+
+/* CONTAINER DE GRIDS (A MÁGICA DA RESPONSIVIDADE) */
+#lista-pedidos-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 20px;
+    /* No notebook: cria colunas automáticas de no mínimo 350px */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-.whatsapp-tools {
-    grid-template-columns: 1fr; /* Ocupa a linha toda */
-    border-top: 1px solid #f1f5f9;
+/* O CARD (ESTILO DA FOTO) */
+.order-card {
+    background: var(--card-bg);
+    border-radius: 40px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Garante que todos os cards tenham o mesmo tamanho na linha */
+}
+
+/* ESTRELAS NO TOPO */
+.order-card::before {
+    content: "✨ ⭐⭐⭐⭐⭐ ✨";
+    display: block;
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+/* HEADER DO CARD */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.badge-id {
+    background: #fff8e6;
+    color: #d97706;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.pedido-hora {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+
+/* INFO CLIENTE */
+
+.cliente-box {
+    margin-bottom: 25px; /* Mais espaço para não embolar com os produtos */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Espaço entre a linha do nome e a linha do tel */
+}
+
+.cliente-box p {
+    font-size: 1.1rem;
+    color: #475569; /* Cinza azulado moderno */
+    font-weight: 500;
+    margin: 0;
+    display: flex;
+    gap: 8px; /* Espaço entre o rótulo e o nome */
+}
+
+.cliente-box txt-cliente {
+    font-size: 1.1rem;
+    color: #10b981 !important; /* Cor mais escura para o rótulo */
+    text-transform: uppercase;
+    font-weight: bold; /* Deixa o "CLIENTE:" e "TEL:" bem negrito */
+    display: inline-block;
+    min-width: 85px; /* Garante que os dois fiquem alinhados verticalmente */
+}
+
+
+.cliente-box txt-tel {
+    font-size: 1.1rem;
+    color: #D97706 !important; /* Cor mais escura para o rótulo */
+    text-transform: uppercase;
+    font-weight: bold; /* Deixa o "CLIENTE:" e "TEL:" bem negrito */
+    display: inline-block;
+    min-width: 85px; /* Garante que os dois fiquem alinhados verticalmente */
+}
+
+
+/* Ajuste específico para o nome do cliente e número ficarem normais (não negrito) se desejar */
+.cliente-box span.dados {
+    font-weight: 500;
+    text-transform: uppercase; /* Deixa o nome BRUNO em caixa alta como no exemplo */
+}
+
+/* BOX DE PRODUTOS */
+.itens-container {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 25px;
+    padding: 18px;
+    margin-bottom: 20px;
+    flex-grow: 1; /* Faz este box crescer para alinhar os botões no fundo */
+}
+
+.titulo-sessao {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.item-linha {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.item-qtd {
+    color: #d97706;
+    font-weight: 800;
+    margin-right: 12px;
+}
+
+.item-nome {
+    font-weight: 600;
+}
+
+/* TOTAL */
+.total-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed #e2e8f0;
     padding-top: 15px;
+    margin-bottom: 20px;
+}
+
+.total-box span {
+    font-weight: 700;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.valor-total {
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+}
+
+/* BOTÕES DE STATUS */
+.status-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .btn-status {
     border: none;
-    padding: 12px;
-    border-radius: 12px;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 0.85rem;
+    padding: 12px 5px;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.75rem;
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 4px;
     transition: 0.2s;
 }
 
-/* ESTILOS ESPECÍFICOS DOS BOTÕES */
+.btn-prep { background: #eff6ff; color: #2563eb; }
+.btn-ready { background: #ecfdf5; color: #059669; }
+.btn-cancel { background: #fff1f2; color: #e11d48; }
 
-.btn-prep {
-    background-color: var(--info-light);
-    color: var(--info);
-}
-
-.btn-prep:hover {
-    background: green;
-    color: #ffffff;
-}
-
-.btn-ready {
-    background-color: var(--success-light);
-    color: var(--success);
-}
-
-.btn-ready:hover {
-    background: blue;
-    color: #ffffff;
-}
-
-.btn-cancel {
-    background-color: var(--danger-light);
-    color: var(--danger);
-    grid-column: span 2; /* Botão de excluir ocupa as duas colunas */
-}
-
-.btn-cancel:hover {
-    background: #ff0000;
-    color: #ffffff;
+/* BOTÕES WHATSAPP */
+.whatsapp-tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 .btn-wa {
-    background-color: #25D366;
-    color: white;
+    background: var(--wa-green);
+    color: white !important;
+    border: none;
+    padding: 12px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 200, 83, 0.2);
 }
 
-.btn-status:hover {
-    filter: brightness(0.95);
-    transform: scale(0.98);
-}
-
-/* RESPONSIVIDADE */
+/* ============================================================
+   Ajustes Específicos para Telemóvel (Mobile)
+   ============================================================ */
 @media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
     #lista-pedidos-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Força 1 card por linha */
     }
-    
-    .header {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
+
+    .order-card {
+        padding: 20px;
+        border-radius: 30px;
     }
+
+    .valor-total {
+        font-size: 1.4rem !important;
+    }
+
+    /* No mobile, os botões ficam ligeiramente maiores para facilitar o toque */
+    .btn-status, .btn-wa {
+        padding: 15px 5px;
+    }
+}
+
+/* Efeito de Clique */
+.btn-status:active, .btn-wa:active {
+    transform: scale(0.95);
 }
