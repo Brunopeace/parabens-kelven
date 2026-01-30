@@ -298,7 +298,7 @@ body {
     gap: 8px; /* Espaço entre o rótulo e o nome */
 }
 
-.cliente-box txt-cliente {
+.cliente-box .txt-cliente {
     font-size: 1.1rem;
     color: #10b981 !important; /* Cor mais escura para o rótulo */
     text-transform: uppercase;
@@ -308,7 +308,7 @@ body {
 }
 
 
-.cliente-box txt-tel {
+.cliente-box .txt-tel {
     font-size: 1.1rem;
     color: #D97706 !important; /* Cor mais escura para o rótulo */
     text-transform: uppercase;
