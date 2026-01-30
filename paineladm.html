@@ -145,51 +145,73 @@
     const somNovoPedido = new Audio('https://www.myinstants.com/media/sounds/ding-sound-effect_1.mp3');
 
     // --- ESCUTAR PEDIDOS ---
-    onValue(ref(db, 'pedidos'), (snapshot) => {
-        const pedidos = snapshot.val();
-        if (!container) return;
+onValue(ref(db, 'pedidos'), (snapshot) => {
+    const pedidos = snapshot.val();
+    if (!container) return;
 
-        if (!primeiraCarga && pedidos) {
-            somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
-        }
-        primeiraCarga = false;
-        container.innerHTML = ""; 
+    if (!primeiraCarga && pedidos) {
+        somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
+    }
+    primeiraCarga = false;
+    container.innerHTML = ""; 
 
-        if (!pedidos) {
-            container.innerHTML = "<p style='text-align:center; padding:20px;'>Sem pedidos no momento.</p>";
-            return;
-        }
+    if (!pedidos) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:40px; color: #6B7280;">
+                <p style="font-size: 50px; margin-bottom: 10px;">☕</p>
+                <p>Nenhum pedido pendente agora.</p>
+            </div>`;
+        return;
+    }
 
-        Object.keys(pedidos).reverse().forEach(id => {
-            const p = pedidos[id];
-            const itensSeguros = p.itens || []; 
-            const listaItens = itensSeguros.map(item => `
-                <li style="list-style: none;">
-                    <strong>(x${item.quantidade || 1})</strong> ${item.nome}
-                    ${item.extras ? `<br><small style="color: #6B7280; margin-left: 15px;">↳ ${item.extras.join(', ')}</small>` : ''}
-                </li>`).join('');
+    Object.keys(pedidos).reverse().forEach(id => {
+        const p = pedidos[id];
+        const itensSeguros = p.itens || []; 
+        
+        const listaItens = itensSeguros.map(item => `
+            <div class="item-linha">
+                <span class="item-qtd">${item.quantidade || 1}x</span>
+                <span class="item-nome">${item.nome}</span>
+                ${item.extras ? `<div class="item-extras">↳ ${item.extras.join(', ')}</div>` : ''}
+            </div>`).join('');
 
-            const card = document.createElement('div');
-            card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
-            card.innerHTML = `
-                <div class="pedido-info">
-                    <h3>#${id.slice(-4)} - ${p.cliente}</h3>
-                    <p><strong>📞 Tel:</strong> ${p.telefone}</p>
-                    <ul style="margin: 10px 0;">${listaItens}</ul>
-                    <p style="text-align: right; font-weight: bold;">Total: R$ ${(p.total || 0).toFixed(2)}</p>
-                </div>
-                <div class="status-group">
-                    <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
-                    <button onclick="mudarStatus('${id}', 2)" class="btn-status btn-ready">Entregar</button>
-                    <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
-                </div>
-                <div class="whatsapp-tools">
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">WhatsApp Preparo</button>
-                    <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">WhatsApp Saiu</button>
-                </div>`;
-            container.appendChild(card);
-        });
+        const card = document.createElement('div');
+        card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
+        card.innerHTML = `
+            <div class="card-header">
+                <span class="badge-id">PEDIDO: #${id.slice(-4).toUpperCase()}</span>
+                <span class="pedido-hora">${p.data || '---'}</span>
+            </div>
+
+            <div class="cliente-box">
+                <p><strong class="txt-cliente">CLIENTE:</strong> ${p.cliente.toUpperCase()}</p>
+                <p><strong class="txt-tel">TEL:</strong> ${p.telefone}</p>
+            </div>
+
+            <div class="itens-container">
+                <p class="titulo-sessao">PRODUTOS</p>
+                ${listaItens}
+            </div>
+
+            <div class="total-box">
+                <span>TOTAL DO PEDIDO</span>
+                <span class="valor-total">R$ ${(p.total || 0).toFixed(2)}</span>
+            </div>
+
+            <div class="status-group">
+                <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
+                <button onclick="mudarStatus('${id}', 2)" class="btn-status btn-ready">Entregar</button>
+                <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
+            </div>
+
+            <div class="whatsapp-tools">
+                <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'preparo')">WhatsApp Preparo</button>
+                <button class="btn-status btn-wa" onclick="avisarWA('${p.telefone}', '${p.cliente}', 'pronto')">WhatsApp Saiu</button>
+            </div>`;
+        container.appendChild(card);
     });
+});
+
 
     window.mudarStatus = (id, novoStatus) => update(ref(db, `pedidos/${id}`), { status: novoStatus });
     window.excluirPedido = (id) => confirm("Excluir pedido?") && remove(ref(db, `pedidos/${id}`));
