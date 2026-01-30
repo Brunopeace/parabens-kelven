@@ -4,7 +4,7 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'salgados-push-v1';
+const CACHE_NAME = 'salgados-push-v2';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDZII2LWg1D4usoWiWtwrvHsi--YxKSo3c",
