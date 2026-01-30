@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salgados-delicia-cliente-v1';
+const CACHE_NAME = 'salgados-delicia-cliente-v26';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
