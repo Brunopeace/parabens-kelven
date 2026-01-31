@@ -141,7 +141,8 @@
         set(statusRef, !lojaEstaBloqueada);
     };
 
-    let primeiraCarga = true;
+        let primeiraCarga = true;
+    let totalPedidosAntigo = 0; // Armazena a contagem anterior de pedidos
     const somNovoPedido = new Audio('https://www.myinstants.com/media/sounds/ding-sound-effect_1.mp3');
 
     // --- ESCUTAR PEDIDOS ---
@@ -149,10 +150,20 @@ onValue(ref(db, 'pedidos'), (snapshot) => {
     const pedidos = snapshot.val();
     if (!container) return;
 
-    if (!primeiraCarga && pedidos) {
-        somNovoPedido.play().catch(() => console.log("Áudio bloqueado"));
+    // Converte para lista de IDs para contar e organizar
+    const listaIds = pedidos ? Object.keys(pedidos) : [];
+    const totalPedidosAtual = listaIds.length;
+
+    // LÓGICA DE SOM: 
+    // Só toca se não for a carga inicial E se o número de pedidos aumentou
+    if (!primeiraCarga && totalPedidosAtual > totalPedidosAntigo) {
+        somNovoPedido.play().catch(() => console.log("Áudio bloqueado pelo navegador"));
     }
+
+    // Atualiza as variáveis de controle
     primeiraCarga = false;
+    totalPedidosAntigo = totalPedidosAtual;
+
     container.innerHTML = ""; 
 
     if (!pedidos) {
@@ -164,10 +175,17 @@ onValue(ref(db, 'pedidos'), (snapshot) => {
         return;
     }
 
-    Object.keys(pedidos).reverse().forEach(id => {
+    // Renderização dos cards (Do mais novo para o mais antigo)
+    listaIds.reverse().forEach(id => {
         const p = pedidos[id];
-        const itensSeguros = p.itens || []; 
+        const status = p.status || 0; // 0=Pendente, 1=Preparo, 2=Entregue
         
+        // Classes dinâmicas para o card
+        let cardClass = "order-card";
+        if (status === 1) cardClass += " status-em-preparo";
+        if (status === 2) cardClass += " status-finalizado";
+
+        const itensSeguros = p.itens || []; 
         const listaItens = itensSeguros.map(item => `
             <div class="item-linha">
                 <span class="item-qtd">${item.quantidade || 1}x</span>
@@ -176,11 +194,13 @@ onValue(ref(db, 'pedidos'), (snapshot) => {
             </div>`).join('');
 
         const card = document.createElement('div');
-        card.className = `order-card ${p.status === 2 ? 'finalizado' : ''}`;
+        card.className = cardClass;
         card.innerHTML = `
             <div class="card-header">
                 <span class="badge-id">PEDIDO: #${id.slice(-4).toUpperCase()}</span>
-                <span class="pedido-hora">${p.data || '---'}</span>
+                <span class="status-badge">
+                    ${status === 1 ? '👨‍🍳 PREPARANDO' : status === 2 ? '🏁 FINALIZADO' : '🕒 NOVO'}
+                </span>
             </div>
 
             <div class="cliente-box">
@@ -199,8 +219,16 @@ onValue(ref(db, 'pedidos'), (snapshot) => {
             </div>
 
             <div class="status-group">
-                <button onclick="mudarStatus('${id}', 1)" class="btn-status btn-prep">Preparar</button>
-                <button onclick="mudarStatus('${id}', 2)" class="btn-status btn-ready">Entregar</button>
+                <button onclick="mudarStatus('${id}', 1)" 
+                    class="btn-status btn-prep ${status >= 1 ? 'active' : ''}">
+                    ${status >= 1 ? '✅ Em Preparo' : 'Preparar'}
+                </button>
+
+                <button onclick="mudarStatus('${id}', 2)" 
+                    class="btn-status btn-ready ${status === 2 ? 'active' : ''}">
+                    ${status === 2 ? '✅ Entregue' : 'Entregar'}
+                </button>
+
                 <button onclick="excluirPedido('${id}')" class="btn-status btn-cancel">Excluir</button>
             </div>
 
@@ -211,7 +239,6 @@ onValue(ref(db, 'pedidos'), (snapshot) => {
         container.appendChild(card);
     });
 });
-
 
     window.mudarStatus = (id, novoStatus) => update(ref(db, `pedidos/${id}`), { status: novoStatus });
     window.excluirPedido = (id) => confirm("Excluir pedido?") && remove(ref(db, `pedidos/${id}`));
